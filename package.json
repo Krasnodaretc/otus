@@ -1,0 +1,39 @@
+{
+  "name": "otus/eszhivagin",
+  "version": "1.0.0",
+  "description": "OTUS homework project - Part 1: Quadratic equation solver with TDD approach",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "dev": "ts-node src/index.ts"
+  },
+  "keywords": ["quadratic", "equation", "solver", "tdd"],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.14.0",
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "collectCoverageFrom": [
+      "src/**/*.ts",
+      "!src/index.ts",
+      "!src/**/index.ts",
+      "!src/**/*.test.ts"
+    ],
+    "testMatch": [
+      "**/tests/**/*.test.ts",
+      "**/src/**/*.test.ts"
+    ]
+  }
+}
