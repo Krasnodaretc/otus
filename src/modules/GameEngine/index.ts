@@ -12,3 +12,4 @@ export * from './Commands/RotateCommand';
 export * from './Commands/MovementWithFuelCommand';
 export * from './Commands/ChangeVelocityCommand';
 export * from './Commands/RotateWithVelocityCommand';
+export * from '../IoC';
