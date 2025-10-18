@@ -1,4 +1,5 @@
-import { Command, isWrapperCommand } from './Command';
+import { Command } from './Command';
+import { unwrapCommand } from './utils';
 import { CommandQueue } from './CommandQueue';
 import { LogCommand } from './LogCommand';
 import { Logger } from './Logger';
@@ -54,26 +55,9 @@ export class ExceptionProcessor {
   }
 
   handle(error: unknown, command: Command): void {
-    const source = this.unwrap(command);
+    const source = unwrapCommand(command);
     const handler = this.strategySelector(error, source);
     handler.handle(error, source, (c) => this.queue.enqueue(c));
-  }
-
-  private unwrap(command: Command): Command {
-    let current: Command = command;
-    const visited = new Set<Command>();
-    while (isWrapperCommand(current)) {
-      if (visited.has(current)) {
-        break;
-      }
-      visited.add(current);
-      const next = current.getTarget();
-      if (!next || next === current) {
-        break;
-      }
-      current = next;
-    }
-    return current;
   }
 }
 
