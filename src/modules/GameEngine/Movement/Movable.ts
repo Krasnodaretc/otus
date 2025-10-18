@@ -15,3 +15,14 @@ export interface Movable {
 }
 
 
+export interface FuelCarrier {
+  getFuelLevel(): number;
+  getFuelConsumption(): number;
+  setFuelLevel(level: number): void;
+}
+
+export interface VelocityMutable extends Movable {
+  setVelocity(velocity: Velocity): void;
+}
+
+
