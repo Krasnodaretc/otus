@@ -1,5 +1,6 @@
 import { Rotator } from './Rotator';
 import { Rotatable } from './Rotatable';
+import { AngleReadError, AngularVelocityReadError, AngleWriteError } from '../Errors';
 
 class TestRotatable implements Rotatable {
   private angleValue: number;
@@ -43,7 +44,7 @@ describe('Rotator', () => {
       setAngle: () => {},
       getAngularVelocity: () => 1,
     };
-    expect(() => rotator.rotate(bad)).toThrow('Cannot read angle');
+    expect(() => rotator.rotate(bad)).toThrow(AngleReadError);
   });
 
   test('throws error if cannot read angular velocity', () => {
@@ -53,13 +54,13 @@ describe('Rotator', () => {
       setAngle: () => {},
       getAngularVelocity: () => Number.NaN as unknown as number,
     };
-    expect(() => rotator.rotate(bad)).toThrow('Cannot read angular velocity');
+    expect(() => rotator.rotate(bad)).toThrow(AngularVelocityReadError);
   });
 
   test('throws error if cannot write angle', () => {
     const rotator = new Rotator();
     const obj = new TestRotatable(0, 1, false);
-    expect(() => rotator.rotate(obj)).toThrow('Cannot write angle');
+    expect(() => rotator.rotate(obj)).toThrow(AngleWriteError);
   });
 });
 

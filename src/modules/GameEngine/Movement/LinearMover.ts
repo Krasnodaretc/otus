@@ -1,20 +1,21 @@
-import { Movable, Position } from './Movable';
+import { Movable, Position, Velocity } from './Movable';
+import { PositionReadError, VelocityReadError, PositionWriteError } from '../Errors';
 
 export class LinearMover {
   move(object: Movable): void {
     let position: Position;
-    let velocity: Position;
+    let velocity: Velocity;
 
     try {
       position = object.getPosition();
     } catch {
-      throw new Error('Cannot read position');
+      throw new PositionReadError('Cannot read position');
     }
 
     try {
       velocity = object.getVelocity();
     } catch {
-      throw new Error('Cannot read velocity');
+      throw new VelocityReadError('Cannot read velocity');
     }
 
     if (
@@ -24,7 +25,7 @@ export class LinearMover {
       !Number.isFinite(position.x) ||
       !Number.isFinite(position.y)
     ) {
-      throw new Error('Cannot read position');
+      throw new PositionReadError('Cannot read position');
     }
 
     if (
@@ -34,7 +35,7 @@ export class LinearMover {
       !Number.isFinite(velocity.x) ||
       !Number.isFinite(velocity.y)
     ) {
-      throw new Error('Cannot read velocity');
+      throw new VelocityReadError('Cannot read velocity');
     }
 
     const newPosition: Position = {
@@ -45,7 +46,7 @@ export class LinearMover {
     try {
       object.setPosition(newPosition);
     } catch {
-      throw new Error('Cannot write position');
+      throw new PositionWriteError('Cannot write position');
     }
   }
 }

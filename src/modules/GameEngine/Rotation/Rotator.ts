@@ -1,4 +1,5 @@
 import { Rotatable } from './Rotatable';
+import { AngleReadError, AngularVelocityReadError, AngleWriteError } from '../Errors';
 
 export class Rotator {
   rotate(object: Rotatable): void {
@@ -8,20 +9,20 @@ export class Rotator {
     try {
       angle = object.getAngle();
     } catch {
-      throw new Error('Cannot read angle');
+      throw new AngleReadError('Cannot read angle');
     }
 
     try {
       angularVelocity = object.getAngularVelocity();
     } catch {
-      throw new Error('Cannot read angular velocity');
+      throw new AngularVelocityReadError('Cannot read angular velocity');
     }
 
     if (!Number.isFinite(angle)) {
-      throw new Error('Cannot read angle');
+      throw new AngleReadError('Cannot read angle');
     }
     if (!Number.isFinite(angularVelocity)) {
-      throw new Error('Cannot read angular velocity');
+      throw new AngularVelocityReadError('Cannot read angular velocity');
     }
 
     const newAngle = angle + angularVelocity;
@@ -29,7 +30,7 @@ export class Rotator {
     try {
       object.setAngle(newAngle);
     } catch {
-      throw new Error('Cannot write angle');
+      throw new AngleWriteError('Cannot write angle');
     }
   }
 }

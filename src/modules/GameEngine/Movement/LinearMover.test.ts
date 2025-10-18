@@ -1,5 +1,6 @@
 import { LinearMover } from './LinearMover';
 import { Movable, Position, Velocity } from './Movable';
+import { PositionReadError, VelocityReadError, PositionWriteError } from '../Errors';
 
 class TestMovable implements Movable {
   private currentPosition: Position;
@@ -43,7 +44,7 @@ describe('LinearMover', () => {
       getVelocity: () => ({ x: 1, y: 1 }),
       setPosition: () => {}
     };
-    expect(() => mover.move(bad)).toThrow('Cannot read position');
+    expect(() => mover.move(bad)).toThrow(PositionReadError);
   });
 
   test('throws error if cannot read velocity', () => {
@@ -53,13 +54,13 @@ describe('LinearMover', () => {
       getVelocity: () => ({ x: Number.NaN as unknown as number, y: 1 }),
       setPosition: () => {}
     };
-    expect(() => mover.move(bad)).toThrow('Cannot read velocity');
+    expect(() => mover.move(bad)).toThrow(VelocityReadError);
   });
 
   test('throws error if cannot write position', () => {
     const mover = new LinearMover();
     const obj = new TestMovable({ x: 0, y: 0 }, { x: 1, y: 1 }, false);
-    expect(() => mover.move(obj)).toThrow('Cannot write position');
+    expect(() => mover.move(obj)).toThrow(PositionWriteError);
   });
 });
 
