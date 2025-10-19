@@ -15,5 +15,7 @@ export * from './RotateCommand';
 export * from './MovementWithFuelCommand';
 export * from './ChangeVelocityCommand';
 export * from './RotateWithVelocityCommand';
-
-
+export * from './thread/WorkerClient';
+export * from './thread/StartWorkerCommand';
+export * from './thread/HardStopWorkerCommand';
+export * from './thread/SoftStopWorkerCommand';
