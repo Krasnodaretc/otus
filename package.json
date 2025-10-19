@@ -8,15 +8,22 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "dev": "ts-node src/index.ts"
+    "dev": "ts-node src/index.ts",
+    "start:server": "ts-node src/server/bootstrap.ts"
   },
-  "keywords": ["quadratic", "equation", "solver", "tdd"],
+  "keywords": [
+    "quadratic",
+    "equation",
+    "solver",
+    "tdd"
+  ],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.14.0",
   "devDependencies": {
     "@types/jest": "^29.5.0",
     "@types/node": "^20.0.0",
+    "@types/ws": "^8.18.1",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.0",
@@ -35,5 +42,8 @@
       "**/tests/**/*.test.ts",
       "**/src/**/*.test.ts"
     ]
+  },
+  "dependencies": {
+    "ws": "^8.18.3"
   }
 }
