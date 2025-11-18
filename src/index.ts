@@ -1,4 +1,5 @@
 import { QuadraticSolver } from './modules/QuadraticSolver';
+export * from './modules/GameEngine';
 
 const solver = new QuadraticSolver();
 
