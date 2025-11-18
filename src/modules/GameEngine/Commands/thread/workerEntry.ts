@@ -4,6 +4,7 @@ import { CommandQueue } from '../CommandQueue';
 import { ExceptionProcessor, LogExceptionHandler } from '../ExceptionHandling';
 import { MemoryLogger } from '../Logger';
 import { QueueProcessor } from '../QueueProcessor';
+import { NormalState } from '../States/NormalState';
 import { IoC } from '../../../IoC';
 import { InboundMessageDTO } from '../../Messaging/types';
 import { runInterpret } from '../../Messaging/interpret';
@@ -30,7 +31,7 @@ if (!parentPort) {
 const logger = new MemoryLogger();
 const queue = new CommandQueue();
 const processor = new ExceptionProcessor(queue, () => new LogExceptionHandler(logger));
-const runner = new QueueProcessor(queue, processor);
+const runner = new QueueProcessor(queue, processor, new NormalState());
 let currentGameId: string | null = null;
 
 class InterpretCommand implements Command {
