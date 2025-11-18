@@ -25,6 +25,19 @@ describe('WorkerClient (worker_threads)', () => {
     await client.softStop();
     expect(executed).toEqual(['a', 'b']);
   });
+
+  test('enqueue interpret does not crash worker', async () => {
+    const client = new WorkerClient();
+    await client.start();
+    client.startGame('g1');
+    client.enqueueInterpret({
+      gameId: 'g1',
+      operationId: 'Noop',
+      args: {},
+      playerId: 'p1',
+    });
+    await client.softStop();
+  });
 });
 
 
