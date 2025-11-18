@@ -2,17 +2,22 @@ import { Worker } from 'worker_threads';
 import path from 'path';
 import fs from 'fs';
 
+import { InboundMessageDTO } from '../../Messaging/types';
+
 type WorkerIn =
   | { type: 'start' }
+  | { type: 'startGame'; gameId: string }
   | { type: 'enqueue'; command: { kind: 'callback'; id: string } }
   | { type: 'enqueue'; command: { kind: 'sleep'; ms: number } }
+  | { type: 'enqueue'; command: { kind: 'interpret'; dto: InboundMessageDTO } }
   | { type: 'hardStop' }
   | { type: 'softStop' };
 
 type WorkerOut =
   | { type: 'started' }
   | { type: 'executed'; id?: string }
-  | { type: 'stopped' };
+  | { type: 'stopped' }
+  | { type: 'state'; gameId: string; snapshot: unknown };
 
 export class WorkerClient {
   private worker: Worker | null = null;
@@ -84,6 +89,22 @@ export class WorkerClient {
   onExecuted(cb: (id?: string) => void): void {
     if (!this.worker) throw new Error('Worker is not started');
     const listener = (m: WorkerOut) => { if (m.type === 'executed') cb(m.id); };
+    this.worker.on('message', listener);
+  }
+
+  startGame(gameId: string): void {
+    if (!this.worker) throw new Error('Worker is not started');
+    this.worker.postMessage({ type: 'startGame', gameId } satisfies WorkerIn);
+  }
+
+  enqueueInterpret(dto: InboundMessageDTO): void {
+    if (!this.worker) throw new Error('Worker is not started');
+    this.worker.postMessage({ type: 'enqueue', command: { kind: 'interpret', dto } } satisfies WorkerIn);
+  }
+
+  onState(cb: (gameId: string, snapshot: unknown) => void): void {
+    if (!this.worker) throw new Error('Worker is not started');
+    const listener = (m: WorkerOut) => { if (m.type === 'state') cb(m.gameId, m.snapshot); };
     this.worker.on('message', listener);
   }
 }
