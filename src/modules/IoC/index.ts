@@ -18,7 +18,7 @@ class IoCContainer {
   public Resolve<T = any>(key: Token, ...args: unknown[]): T {
     const factory = this.lookupFactory(key);
     if (!factory) {
-      throw new Error(`No registration for key`);
+      throw new Error(`No registration for key ${String(key)}`);
     }
     return this.invokeFactory(factory, args) as T;
   }
@@ -120,5 +120,3 @@ class IoCContainer {
 export const IoC = new IoCContainer();
 export const createIoC = () => new IoCContainer();
 export type { Factory as IoCFactory, Token as IoCToken };
-
-
