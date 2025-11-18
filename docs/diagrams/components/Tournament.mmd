@@ -1,0 +1,18 @@
+flowchart TB
+    subgraph TournamentService["Tournament Service"]
+        API["HTTP API\nCRUD, Applications, Schedule"]
+        Rules["Rules/Policy Engine"]
+        Repo["Tournament Repository\nPostgreSQL"]
+        Publisher["Domain Events Publisher"]
+    end
+    Broker["Event Broker"]
+    Cache["Redis Cache"]
+
+    API --> Rules
+    API --> Repo
+    Rules --> Repo
+    Repo --> Publisher
+    Publisher --> Broker
+    API --- Cache
+
+

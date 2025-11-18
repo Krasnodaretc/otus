@@ -1,0 +1,24 @@
+sequenceDiagram
+    participant T as Tournament Service
+    participant MM as Matchmaking Service
+    participant OR as Battle Orchestrator
+    participant W as Engine Workers
+    participant RT as Rating Service
+    participant RP as Replay Service
+    participant BR as Event Broker
+
+    T->>MM: Publish open slots
+    MM->>MM: Pair players (strategy)
+    MM->>BR: match.created
+    BR->>OR: Consume(match.created)
+    OR->>OR: Reserve match
+    OR->>W: RunMatch(matchId) (gRPC)
+    W-->>OR: MatchFinished(result, artifacts)
+    OR->>BR: match.finished
+    OR->>RP: Upload replay
+    RP->>BR: battle.replay.available
+    BR->>RT: Consume(match.finished)
+    RT->>RT: Recalculate ratings
+    RT->>BR: rating.updated
+
+

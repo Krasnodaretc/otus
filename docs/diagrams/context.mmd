@@ -1,0 +1,53 @@
+flowchart LR
+    %% Context Diagram (C4-style using Mermaid flowchart)
+    subgraph Users["Users"]
+        UWeb["Player (Web/Mobile)"]
+        UAgent["Agent App (Bot Runtime)"]
+        UAdmin["Admin User"]
+    end
+
+    subgraph Platform["Space Battle Platform"]
+        APIGW["API Gateway / BFF"]
+        Auth["Auth Service"]
+        Prof["User/Profile Service"]
+        Tourn["Tournament Service"]
+        MM["Matchmaking Service"]
+        Orchestrator["Battle Orchestrator"]
+        Workers["Game Engine Workers"]
+        Rating["Rating Service"]
+        Notif["Notification Service"]
+        Replay["Replay Service"]
+        Scheduler["Scheduler / Jobs"]
+        Admin["Admin Service"]
+        Obs["Observability Stack"]
+    end
+
+    Broker["Event Broker (Kafka/NATS)"]
+    Storage["S3 Object Storage"]
+
+    UWeb -->|HTTPS REST/WS| APIGW
+    UAgent -->|Secure API / Tokens| APIGW
+    UAdmin -->|Admin UI| APIGW
+
+    APIGW --- Auth
+    APIGW --- Prof
+    APIGW --- Tourn
+    APIGW --- MM
+    APIGW --- Orchestrator
+    APIGW --- Rating
+    APIGW --- Notif
+    APIGW --- Replay
+    APIGW --- Admin
+
+    Orchestrator --> Workers
+    Orchestrator <--> Broker
+    Tourn <--> Broker
+    MM <--> Broker
+    Rating <--> Broker
+    Notif <--> Broker
+    Scheduler <--> Broker
+    Replay --> Storage
+
+    Obs -.-> Platform
+*** End Patch  ***!
+

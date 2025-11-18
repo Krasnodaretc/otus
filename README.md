@@ -4,6 +4,19 @@
 
 Первая часть учебного проекта OTUS, посвященная разработке решателя квадратных уравнений с использованием принципов Test-Driven Development (TDD).
 
+## Архитектура «Космический бой»
+
+Материалы по микросервисной архитектуре игры находятся в каталоге `docs/`:
+
+- Текстовое описание: `docs/architecture.md`
+- Диаграммы:
+  - Context: `docs/diagrams/context.mmd`
+  - Container: `docs/diagrams/container.mmd`
+  - Components: `docs/diagrams/components/`
+  - Sequences: `docs/diagrams/sequences/`
+- События: `docs/events.md`
+- Эндпоинты: `docs/endpoints.md`
+
 ## Описание текущей части
 
 Эта часть проекта реализует класс `QuadraticSolver` для нахождения корней квадратного уравнения вида ax² + bx + c = 0. 

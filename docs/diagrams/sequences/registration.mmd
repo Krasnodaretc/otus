@@ -1,0 +1,19 @@
+sequenceDiagram
+    participant UI as Web/Mobile UI
+    participant GW as API Gateway
+    participant AUTH as Auth Service
+    participant PROF as Profile Service
+
+    UI->>GW: POST /auth/register
+    GW->>AUTH: Register(user)
+    AUTH-->>GW: 201 Created + userId
+    GW->>PROF: InitProfile(userId)
+    PROF-->>GW: 201 Created
+    GW-->>UI: 200 OK
+
+    UI->>GW: POST /auth/login
+    GW->>AUTH: IssueTokens(credentials)
+    AUTH-->>GW: accessToken/refreshToken
+    GW-->>UI: 200 OK + tokens
+
+

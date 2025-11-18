@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant BR as Event Broker
+    participant RT as Rating Service
+    participant DB as Ratings DB
+    participant LB as Leaderboard Cache
+    participant GW as API Gateway
+    participant UI as Player UI
+
+    BR->>RT: match.finished(event)
+    RT->>RT: Select strategy (Elo/Glicko)
+    RT->>DB: Update player ratings
+    RT->>LB: Update leaderboard
+    RT->>BR: rating.updated
+
+    UI->>GW: GET /leaderboard
+    GW->>LB: Fetch leaderboard
+    LB-->>GW: top N
+    GW-->>UI: leaderboard data
+
+

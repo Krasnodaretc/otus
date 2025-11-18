@@ -1,0 +1,18 @@
+flowchart TB
+    subgraph RatingService["Rating Service"]
+        Consumer["Match Result Consumer"]
+        Calculator["Rating Calculator\n(Elo/Glicko strategies)"]
+        Repo["Ratings Repository\nPostgreSQL"]
+        Leaderboard["Leaderboard Cache\nRedis/ClickHouse"]
+        Publisher["Events Publisher"]
+    end
+    Broker["Event Broker"]
+
+    Broker --> Consumer
+    Consumer --> Calculator
+    Calculator --> Repo
+    Calculator --> Leaderboard
+    Calculator --> Publisher
+    Publisher --> Broker
+
+
