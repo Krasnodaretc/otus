@@ -148,3 +148,54 @@ const oneRoot = solver.solve(1, 2, 1); // [-1]
 ## Лицензия
 
 ISC
+ 
+---
+
+Auth microservice and JWT integration
+====================================
+
+Overview
+--------
+This project includes:
+- Game server (HTTP `/messages`, WS `/ws`)
+- Auth service (HTTP `/battles`, `/token`)
+
+Auth service issues HS256 JWT tokens for players participating in a battle. The game server validates tokens and enforces that the message `gameId` matches the token `gameId`.
+
+Environment variables
+---------------------
+- Game server:
+  - `PORT` (default: 3000)
+  - `AUTH_SECRET` (shared HS256 secret, default: `dev-secret`)
+  - `AUTH_URL` (base URL of Auth service, e.g., `http://localhost:4000`)
+- Auth service:
+  - `AUTH_PORT` (default: 4000)
+  - `AUTH_SECRET` (shared HS256 secret, default: `dev-secret`)
+
+Commands
+--------
+- Start game server:
+  - `pnpm start:server`
+- Start auth service:
+  - `pnpm start:auth`
+- Build:
+  - `pnpm build`
+- Tests:
+  - `pnpm test`
+
+Auth API
+--------
+- `POST /battles`:
+  - Body: `{ "participants": ["user-1","user-2"] }`
+  - Response: `{ "gameId": "uuid" }`
+- `POST /token`:
+  - Headers: `X-User-Id: user-1`
+  - Body: `{ "gameId": "uuid" }`
+  - Response: `{ "token": "jwt" }`
+
+Game server API
+---------------
+- `POST /messages`:
+  - Headers: `Authorization: Bearer <jwt>`
+  - Body: `{ "gameId": "uuid", "objectId": "...", "operationId": "...", "args": {} }`
+  - Response: `202 Accepted` if token is valid and `gameId` matches
