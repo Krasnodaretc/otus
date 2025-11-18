@@ -1,0 +1,21 @@
+flowchart TB
+    subgraph Orchestrator["Battle Orchestrator"]
+        API["Control API\nStart/Stop/Status"]
+        Scheduler["Match Reservation & Scheduling"]
+        Runner["Worker Manager\ngRPC Clients"]
+        Artifacts["Artifacts Uploader\nS3"]
+        Publisher["Events Publisher"]
+    end
+    Workers["Engine Workers\nIsolated Runtimes"]
+    Broker["Event Broker"]
+    Storage["S3 Storage"]
+
+    API --> Scheduler
+    Scheduler --> Runner
+    Runner --> Workers
+    Runner --> Artifacts
+    Artifacts --> Storage
+    Runner --> Publisher
+    Publisher --> Broker
+
+

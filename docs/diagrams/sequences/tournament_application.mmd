@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant UI as Player UI
+    participant GW as API Gateway
+    participant TS as Tournament Service
+    participant NS as Notification Service
+    participant BR as Event Broker
+
+    UI->>GW: POST /tournaments/{id}/applications
+    GW->>TS: SubmitApplication(userId, tournamentId)
+    TS-->>GW: 202 Accepted
+    TS->>BR: tournament.application.submitted
+    BR->>NS: Consume(application.submitted)
+    NS-->>UI: Send confirmation notification
+
+    alt Auto decision or Admin moderation
+        TS->>BR: tournament.application.decided
+        BR->>NS: Consume(application.decided)
+        NS-->>UI: Send decision notification
+    end
+
+

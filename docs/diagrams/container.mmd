@@ -1,0 +1,69 @@
+flowchart LR
+    %% Container Diagram (C4-style using Mermaid flowchart)
+    subgraph Clients["Clients"]
+        Web["Web/Mobile UI"]
+        Agent["Agent App"]
+        AdminUI["Admin UI"]
+    end
+
+    subgraph Edge["Edge Layer"]
+        Gateway["API Gateway / BFF\nREST + WebSocket\nAuthN/Z, Rate Limit"]
+    end
+
+    subgraph Core["Core Microservices"]
+        Auth["Auth Service\nJWT/Refresh/OAuth2"]
+        Profile["User/Profile Service\nPostgreSQL, Redis Cache"]
+        Tournament["Tournament Service\nPostgreSQL"]
+        Matchmaking["Matchmaking Service\nRedis Queues/Sets"]
+        Orchestrator["Battle Orchestrator\ngRPC to Workers"]
+        Rating["Rating Service\nElo/Glicko, Leaderboards"]
+        Notification["Notification Service\nEmail/Push/WebSocket"]
+        Replay["Replay Service\nS3 Storage"]
+        Scheduler["Scheduler / Jobs\nCron & Delayed Tasks"]
+        Admin["Admin Service\nModeration/Operations"]
+    end
+
+    subgraph Infra["Infrastructure"]
+        Broker["Event Broker\nKafka/NATS"]
+        DBMain["PostgreSQL (OLTP)"]
+        Cache["Redis"]
+        Obj["S3-compatible Storage"]
+        Analytics["ClickHouse (Analytics)"]
+        Observ["Observability Stack\nLogs/Metrics/Tracing"]
+    end
+
+    Web -->|HTTPS| Gateway
+    Agent -->|HTTPS| Gateway
+    AdminUI -->|HTTPS| Gateway
+
+    Gateway --- Auth
+    Gateway --- Profile
+    Gateway --- Tournament
+    Gateway --- Matchmaking
+    Gateway --- Orchestrator
+    Gateway --- Rating
+    Gateway --- Notification
+    Gateway --- Replay
+    Gateway --- Admin
+
+    Auth --- DBMain
+    Profile --- DBMain
+    Tournament --- DBMain
+    Matchmaking --- Cache
+    Rating --- DBMain
+    Notification --- DBMain
+    Replay --- DBMain
+    Orchestrator --- DBMain
+
+    Orchestrator --- Obj
+    Replay --- Obj
+
+    Tournament <--> Broker
+    Matchmaking <--> Broker
+    Orchestrator <--> Broker
+    Rating <--> Broker
+    Notification <--> Broker
+    Scheduler <--> Broker
+
+    Observ -.-> Core
+

@@ -1,0 +1,19 @@
+flowchart TB
+    subgraph NotificationService["Notification Service"]
+        API["HTTP API\nTemplates & Test Send"]
+        Consumer["Events Consumer"]
+        Router["Channel Router\n(email/push/ws)"]
+        Providers["Providers Pool"]
+        Repo["Templates/Outbox\nPostgreSQL"]
+        DLQ["Dead Letter Queue"]
+    end
+    Broker["Event Broker"]
+
+    API --> Repo
+    Broker --> Consumer
+    Consumer --> Router
+    Router --> Providers
+    Router --> Repo
+    Router --> DLQ
+
+

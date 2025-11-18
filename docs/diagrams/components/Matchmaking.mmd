@@ -1,0 +1,15 @@
+flowchart TB
+    subgraph MatchmakingService["Matchmaking Service"]
+        API["HTTP API\nEnqueue/Status"]
+        Queue["Queues/Sets\nRedis"]
+        Matcher["Pairing Strategies\n(Elo window, time decay)"]
+        Publisher["Events Publisher"]
+    end
+    Broker["Event Broker"]
+
+    API --> Queue
+    Matcher --> Queue
+    Matcher --> Publisher
+    Publisher --> Broker
+
+

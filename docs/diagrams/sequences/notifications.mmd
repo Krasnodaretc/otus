@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant BR as Event Broker
+    participant NS as Notification Service
+    participant PR as Providers
+    participant UI as Player UI (WS)
+    participant SCH as Scheduler
+
+    SCH->>NS: Schedule reminders (cron/delay)
+    BR->>NS: application.decided / match.started / match.finished
+    NS->>NS: Select template & channel
+    NS->>PR: Send via provider
+    PR-->>NS: Delivery status
+    NS-->>UI: WebSocket push (if connected)
+
+
