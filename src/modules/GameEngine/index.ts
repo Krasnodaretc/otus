@@ -13,3 +13,8 @@ export * from './Commands/MovementWithFuelCommand';
 export * from './Commands/ChangeVelocityCommand';
 export * from './Commands/RotateWithVelocityCommand';
 export * from '../IoC';
+export * from './Collision/types';
+export * from './Collision/CheckCollisionCommand';
+export * from './Collision/NeighborhoodGrid';
+export * from './Collision/UpdateNeighborhoodCommand';
+export * from './Collision/MultiNeighborhoodCommand';
