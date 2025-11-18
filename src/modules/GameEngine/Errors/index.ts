@@ -41,5 +41,13 @@ export class AngleWriteError extends Error {
 }
 
 
+export class CommandException extends Error {
+  constructor(message: string = 'Command failed') {
+    super(message);
+    this.name = 'CommandException';
+  }
+}
+
+
 
 
