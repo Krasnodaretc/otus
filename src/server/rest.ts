@@ -51,14 +51,21 @@ export function createRestServer(registry: GameRegistry): http.Server {
         const chunks: Buffer[] = [];
         for await (const chunk of req) chunks.push(Buffer.from(chunk));
         const raw = Buffer.concat(chunks).toString('utf8');
-        const data = JSON.parse(raw) as unknown;
-        if (!validateInboundMessageDTO(data)) {
+        const data = JSON.parse(raw) as unknown as Partial<InboundMessageDTO>;
+        const enriched: InboundMessageDTO = {
+          gameId: String((data as any)?.gameId ?? ''),
+          objectId: typeof (data as any)?.objectId === 'string' ? (data as any).objectId : undefined,
+          operationId: String((data as any)?.operationId ?? ''),
+          args: (data as any)?.args && typeof (data as any).args === 'object' ? ((data as any).args as Record<string, unknown>) : {},
+          playerId: claims.sub,
+        };
+        if (!validateInboundMessageDTO(enriched)) {
           res.statusCode = 400;
           res.setHeader('content-type', 'application/json');
           res.end(JSON.stringify({ error: 'Invalid payload' }));
           return;
         }
-        const dto: InboundMessageDTO = data;
+        const dto: InboundMessageDTO = enriched;
         if (claims.gameId !== dto.gameId) {
           res.statusCode = 403;
           res.setHeader('content-type', 'application/json');
