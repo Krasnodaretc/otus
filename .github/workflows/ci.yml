@@ -1,34 +1,4 @@
-name: ci
-on:
-  push:
-  pull_request:
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        node: [18, 20]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node }}
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run test:coverage
-      - name: Save coverage summary
-        if: always()
-        run: |
-          node -e "const fs=require('fs');const p='coverage/coverage-summary.json';if(fs.existsSync(p)){const s=JSON.parse(fs.readFileSync(p,'utf8'));const t=s.total;const md=['### Test coverage','','| Metric | % |','|---|---|',`| Statements | ${t.statements.pct}% |`,`| Branches | ${t.branches.pct}% |`,`| Functions | ${t.functions.pct}% |`,`| Lines | ${t.lines.pct}% |`].join('\n');if(process.env.GITHUB_STEP_SUMMARY){fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, md);}else{console.log(md);} } else { console.log('coverage summary not found'); }"
-      - name: Upload coverage
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage
-          path: coverage
-
 name: CI
-
 on:
   push:
     branches: [ master ]
