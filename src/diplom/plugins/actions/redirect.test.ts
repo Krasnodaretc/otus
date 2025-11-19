@@ -6,6 +6,10 @@ describe('redirect action', () => {
     expect(res.type).toBe('redirect');
     expect(res.url).toBe('https://example.com');
   });
+  it('returns empty url when missing', async () => {
+    const res = await redirectAction.execute({} as any, {});
+    expect(res.url).toBe('');
+  });
 });
 
 

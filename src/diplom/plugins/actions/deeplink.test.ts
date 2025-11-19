@@ -6,6 +6,10 @@ describe('deeplink action', () => {
     expect(res.type).toBe('deeplink');
     expect(res.url).toBe('app://open');
   });
+  it('returns empty url when missing', async () => {
+    const res = await deeplinkAction.execute({} as any, {});
+    expect(res.url).toBe('');
+  });
 });
 
 

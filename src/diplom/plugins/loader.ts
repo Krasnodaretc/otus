@@ -37,9 +37,19 @@ export const loadPluginModule = async (modulePath: string): Promise<LoadedPlugin
   // Dynamic import kept simple; callers decide how to use descriptor/version
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const mod = await import(modulePath);
-  const cand = mod.default || mod.plugin || mod;
-  const kind: PluginKind = mod.kind || (isCondition(cand) ? 'condition' : 'action');
-  return { kind, plugin: cand };
+  let candidate: unknown = (mod as Record<string, unknown>).default ?? (mod as Record<string, unknown>).plugin ?? mod;
+  if (typeof candidate === 'object' && candidate !== null) {
+    const maybeObj = candidate as Record<string, unknown>;
+    if ('plugin' in maybeObj && maybeObj.plugin) {
+      candidate = maybeObj.plugin;
+    }
+  }
+  const modKind = (mod as Record<string, unknown>).kind;
+  const kind: PluginKind =
+    modKind === 'condition' || modKind === 'action'
+      ? (modKind as PluginKind)
+      : (isCondition(candidate) ? 'condition' : 'action');
+  return { kind, plugin: candidate as ConditionPlugin | ActionPlugin };
 };
 
 

@@ -27,6 +27,17 @@ describe('RedirectFacade pipeline', () => {
     expect(res.status).toBe(302);
     expect(res.location).toBe('https://ok');
   });
+  it('can work with provided root handler', async () => {
+    const mockRoot = {
+      handle: jest.fn(async (_ctx: any, res: any) => {
+        res.status = 204;
+      }),
+    } as any;
+    const f = new RedirectFacade(mockRoot);
+    const res = await f.handle({} as any);
+    expect(res.status).toBe(204);
+    expect(mockRoot.handle).toHaveBeenCalled();
+  });
 });
 
 

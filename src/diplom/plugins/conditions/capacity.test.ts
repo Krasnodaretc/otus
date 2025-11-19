@@ -9,6 +9,10 @@ describe('capacity condition', () => {
     const res = capacityCondition.match({} as any, { current: 10, max: 10 });
     expect(res).toBe(false);
   });
+  it('false when values not numbers', () => {
+    const res = capacityCondition.match({} as any, { current: 'x', max: 'y' } as any);
+    expect(res).toBe(false);
+  });
 });
 
 

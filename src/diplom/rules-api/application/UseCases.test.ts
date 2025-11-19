@@ -30,10 +30,30 @@ describe('Rules UseCases', () => {
     await del.execute('1');
   });
 
+  it('create fails without dsl and with invalid dsl', async () => {
+    const create = new CreateRuleSetHandler(repo as any);
+    await expect(create.execute({})).rejects.toThrow(/dsl required/);
+    await expect(create.execute({ dsl: { rules: [{ id: 'x', if: { any: [{ type: 'unknown' }] }, then: [] }] } as any })).rejects.toThrow();
+  });
+
+  it('update validates dsl when present and skips when absent', async () => {
+    const update = new UpdateRuleSetHandler(repo as any);
+    // invalid dsl present -> throws
+    await expect(update.execute('1', { dsl: { rules: [{ id: 'x', if: { any: [{ type: 'unknown' }] }, then: [] }] } as any })).rejects.toThrow();
+    // no dsl present -> passes to repo
+    const res = await update.execute('1', { name: 'ok' });
+    expect(res?.name).toBe('ok');
+  });
+
   it('preview rules returns result', async () => {
     const preview = new PreviewRulesHandler();
     const res = await preview.execute({ skills: ['js'] }, { rules: [{ id: 'r', if: { any: [{ type: 'skill', hasAny: ['js'] }] }, then: [{ type: 'redirect', url: 'https://x' }] }] } as any);
     expect(res.matchedRuleId).toBe('r');
+  });
+
+  it('preview rules fails on invalid dsl', async () => {
+    const preview = new PreviewRulesHandler();
+    await expect(preview.execute({}, { rules: [{ id: 'x', if: { any: [{ type: 'unknown' }] }, then: [] }] } as any)).rejects.toThrow();
   });
 });
 

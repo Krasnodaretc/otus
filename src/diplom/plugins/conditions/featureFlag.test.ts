@@ -9,6 +9,14 @@ describe('featureFlag condition', () => {
     const res = featureFlagCondition.match({ featureFlags: { x: false } } as any, { name: 'x', enabled: false });
     expect(res).toBe(true);
   });
+  it('returns false when name missing', () => {
+    const res = featureFlagCondition.match({ featureFlags: { x: true } } as any, { enabled: true } as any);
+    expect(res).toBe(false);
+  });
+  it('returns false when expected mismatches', () => {
+    const res = featureFlagCondition.match({ featureFlags: { x: true } } as any, { name: 'x', enabled: false });
+    expect(res).toBe(false);
+  });
 });
 
 

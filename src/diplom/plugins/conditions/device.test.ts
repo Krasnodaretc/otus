@@ -5,6 +5,10 @@ describe('device condition', () => {
     const res = deviceCondition.match({ device: 'mobile' } as any, { in: ['desktop', 'mobile'] });
     expect(res).toBe(true);
   });
+  it('returns false when context missing or not in list', () => {
+    expect(deviceCondition.match({} as any, { in: ['desktop'] })).toBe(false);
+    expect(deviceCondition.match({ device: 'tv' } as any, { in: ['mobile'] })).toBe(false);
+  });
 });
 
 
