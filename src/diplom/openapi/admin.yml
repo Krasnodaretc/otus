@@ -1,0 +1,75 @@
+openapi: 3.0.3
+info:
+  title: Admin API
+  version: 1.0.0
+paths:
+  /campaigns:
+    get:
+      summary: List campaigns
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Create campaign
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Created
+  /smart-links:
+    get:
+      summary: List smart links
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Create smart link
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Created
+  /vacancies:
+    get:
+      summary: List vacancies
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Create vacancy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Created
+  /api-keys:
+    get:
+      summary: List api keys
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Issue api key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Created
+
+

@@ -1,0 +1,83 @@
+version: "3.8"
+services:
+  mongo:
+    image: mongo:6
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+  nats:
+    image: nats:2
+    restart: unless-stopped
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+  edge:
+    build:
+      context: .
+    command: npm run start:edge
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/hr_links
+      - REDIS_URL=redis://redis:6379
+      - NATS_URL=nats://nats:4222
+      - PORT=3000
+    depends_on:
+      - mongo
+      - redis
+      - nats
+  rules-api:
+    build:
+      context: .
+    command: npm run start:rules
+    ports:
+      - "3001:3001"
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/hr_links
+      - REDIS_URL=redis://redis:6379
+      - NATS_URL=nats://nats:4222
+      - PORT=3001
+    depends_on:
+      - mongo
+      - redis
+      - nats
+  admin-api:
+    build:
+      context: .
+    command: npm run start:admin
+    ports:
+      - "3002:3002"
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/hr_links
+      - REDIS_URL=redis://redis:6379
+      - NATS_URL=nats://nats:4222
+      - PORT=3002
+    depends_on:
+      - mongo
+      - redis
+      - nats
+  analytics:
+    build:
+      context: .
+    command: npm run start:analytics
+    ports:
+      - "3003:3003"
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/hr_links
+      - REDIS_URL=redis://redis:6379
+      - NATS_URL=nats://nats:4222
+      - PORT=3003
+    depends_on:
+      - mongo
+      - redis
+      - nats
+volumes:
+  mongo_data:
+
