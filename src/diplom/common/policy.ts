@@ -1,5 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { ApiKeyModel } from '../db/schemas';
+import { IApiKeyReader } from './ports/IApiKeyReader';
+import { ApiKeyReaderMongo } from './adapters/ApiKeyReaderMongo';
 
 export type ScopeMode = 'all' | 'any';
 
@@ -16,15 +17,14 @@ export class ApiKeyPolicy {
   }
 }
 
-export const requireScopes = (scopes: string[], mode: ScopeMode = 'all') => {
+export const requireScopes = (scopes: string[], mode: ScopeMode = 'all', reader: IApiKeyReader = new ApiKeyReaderMongo()) => {
   const policy = new ApiKeyPolicy(mode);
   return async (req: FastifyRequest, reply: FastifyReply) => {
     const key = (req.headers['x-api-key'] || req.headers['X-API-Key'] || '') as string;
     if (!key) return reply.code(401).send({ error: 'api key required' });
-    const rec = await ApiKeyModel.findOne({ key, active: true }).lean();
+    const rec = await reader.findActiveByKey(key);
     if (!rec) return reply.code(403).send({ error: 'forbidden' });
-    const scopesValue = (rec as { scopes?: unknown }).scopes;
-    const scopesArray = Array.isArray(scopesValue) ? (scopesValue as string[]) : [];
+    const scopesArray = Array.isArray(rec.scopes) ? rec.scopes : [];
     if (!policy.isAllowed(scopesArray, scopes)) return reply.code(403).send({ error: 'insufficient_scope' });
   };
 };

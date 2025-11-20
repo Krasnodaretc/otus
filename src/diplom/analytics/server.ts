@@ -4,13 +4,19 @@ import { connectMongo } from '../db/schemas';
 import { rollupDaily } from './service';
 import { getNats } from '../common/nats';
 import { EventModel } from '../db/schemas';
+import { createApiKeyPreHandler } from '../common/authApiKey';
+import { ApiKeyReaderMongo } from '../common/adapters/ApiKeyReaderMongo';
+import { requireScopes } from '../common/policy';
+import { logger } from '../common/logger';
 
 const bootstrap = async () => {
   const env = readEnv();
   await connectMongo(env.mongoUrl);
   const app = Fastify({ logger: false });
 
-  app.post('/rollup/:date', async (req) => {
+  const apiKeyPreHandler = createApiKeyPreHandler(new ApiKeyReaderMongo());
+
+  app.post('/rollup/:date', { preHandler: [apiKeyPreHandler, requireScopes(['analytics:rollup'])] }, async (req) => {
     const date = (req.params as any).date as string;
     return rollupDaily(date);
   });
@@ -20,7 +26,7 @@ const bootstrap = async () => {
 
   try {
     const nats = await getNats();
-    const sub = nats.subscribe('events.*');
+    const sub = nats.subscribe('events.*', { queue: 'analytics' });
     (async () => {
       for await (const m of sub) {
         try {
@@ -33,10 +39,14 @@ const bootstrap = async () => {
             payload: data.payload,
             createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
           });
-        } catch (e) {}
+        } catch (e) {
+          logger.warn('analytics event ingest failed', { error: (e as Error)?.message });
+        }
       }
     })();
-  } catch {}
+  } catch (e) {
+    logger.warn('analytics nats subscribe failed', { error: (e as Error)?.message });
+  }
 };
 
 bootstrap().catch(err => {
