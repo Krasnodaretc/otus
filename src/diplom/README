@@ -1,0 +1,134 @@
+## HR Smart Links – Project Overview
+
+Платформа умных ссылок для HR‑маркетинга: один короткий линк направляет кандидата на оптимальное «следующее действие» (релевантная вакансия, лендинг, опрос, календарь) по правилам: навыки, канал, гео, язык, устройство, время, лимиты, эксперименты. Результаты и события отправляются в аналитику. Управление сущностями через Admin API, правила — через Rules API и JSON DSL, публичный редирект — через Edge.
+
+### Основные возможности
+- Создание кампаний и умных ссылок со сложными правилами матчинга
+- Превью/объяснение срабатывания правил до публикации
+- Динамические действия: редирект, модификация UTM, вебхуки, диплинки
+- A/B/N эксперименты, приоритеты и капы, fallback‑сценарии
+- Сбор событий кликов/матчинга/редиректов, агрегированная аналитика
+
+## Состав проекта (`src/diplom`)
+- `edge/`: публичный HTTP‑редиректор, пайплайн обработки контекста, интеграция с Rules Engine
+- `rules-engine/`: DSL, валидатор, эвалюатор, реестр плагинов условий и действий
+- `rules-api/`: CRUD правил и наборов, превью/валидация
+- `admin-api/`: кампании, умные ссылки, вакансии, выпуск API‑ключей, отчеты
+- `analytics/`: коллектор событий и агрегатор метрик
+- `plugins/`: базовые плагины `conditions/` и `actions/` для Rules Engine
+- `common/`: конфиг, IoC, логирование, наблюдаемость, политики, адаптеры
+- `db/`: схемы данных (Mongoose), индексация/TTL
+- `openapi/`: спецификации `admin.yml`, `edge.yml`, `rules.yml`
+
+### Используемые паттерны
+- Chain of Responsibility (пайплайн Edge)
+- Strategy/Specification (условия и действия правил)
+- Interpreter (JSON DSL → модель)
+- Composite (деревья условий all/any)
+- Facade (координация редиректа)
+- Observer (диспетчер событий)
+- Registry/Abstract Factory (реестр плагинов)
+
+## Логический обзор компонентов
+
+```mermaid
+flowchart LR
+  subgraph Client
+    U[User Agent]
+  end
+
+  subgraph Edge["Edge Redirector"]
+    E1[Context Normalizer]
+    E2[Rate Limit / Caps]
+    E3[Rule Evaluate]
+    E4[Action Executor]
+  end
+
+  subgraph Rules["Rules Engine + Rules API"]
+    RE[Evaluator + Plugins]
+    RA[Rules API]
+  end
+
+  subgraph Admin["Admin API"]
+    AA[Campaigns / SmartLinks / Vacancies / API Keys]
+  end
+
+  subgraph Data["Data Stores"]
+    M[(MongoDB)]
+    R[(Redis)]
+  end
+
+  subgraph Bus["Event Bus"]
+    N[NATS]
+  end
+
+  subgraph Analytics["Analytics"]
+    AN[Collector / Aggregations]
+  end
+
+  U -->|GET /r/{slug}| E1 --> E2 --> E3 --> E4
+  E3 -->|Preview/Eval| RE
+  RE <-->|CRUD Rules| RA
+  AA <-->|CRUD Entities| M
+  RA <-->|Rulesets| M
+  E3 -->|Rules Cache| R
+  E4 -->|redirect / webhook events| N --> AN
+  AN --> M
+```
+
+## Поток запроса редиректа
+
+```mermaid
+sequenceDiagram
+  participant UA as User Agent
+  participant Edge as Edge Redirector
+  participant RE as Rules Engine
+  participant R as Redis
+  participant N as NATS
+  participant M as MongoDB
+
+  UA->>Edge: GET /r/{slug}
+  Edge->>Edge: Normalize (UA, IP→Geo, cookies)
+  Edge->>R: Get rules cache
+  alt cache hit
+    Edge->>Edge: Evaluate rules
+  else cache miss
+    Edge->>RE: Evaluate/Fetch rules
+    RE-->>Edge: Decision (ruleId, action, explain)
+    Edge->>R: Set rules cache
+  end
+  Edge->>N: Publish events (click, matched, redirect)
+  Edge-->>UA: 302/307 Redirect (X-Rule-Id)
+  N->>M: Analytics rollups
+```
+
+## Данные и модель
+- Коллекции MongoDB: `campaigns`, `smart_links`, `rulesets`, `vacancies`, `api_keys`, `events` (TTL), `metrics_daily`
+- Индексы: `slug`, `campaignId`, `createdAt`, TTL для событий
+- Кэш Redis: правила и вычисленные капы, счётчики rate limit
+
+## API контракты
+- Edge Redirector: см. `openapi/edge.yml` (GET `/r/{slug}`, 302/307, `X-Rule-Id`)
+- Rules API: см. `openapi/rules.yml` (CRUD `rulesets`, `POST /rules/preview`)
+- Admin API: см. `openapi/admin.yml` (кампании, умные ссылки, вакансии, ключи)
+
+## Расширяемость через плагины и DSL
+- JSON DSL описывает `if` (all/any) условий → `then` действия → `else` fallback
+- Плагины условий: `skill`, `geo`, `locale`, `device`, `os`, `browser`, `timeWindow`, `abBucket`, `capacity`, `referrer`, `source`, `featureFlag`
+- Плагины действий: `redirect(url)`, `appendUtm`, `webhook(url,payload)`, `deeplink(schema)`
+- Подгрузка плагинов выполнена через реестр/IoC, без изменения ядра
+
+## Как запускать локально
+- Docker Compose в корне репозитория поднимает `edge`, `rules-api`, `admin-api`, `analytics`, `mongo`, `redis`, `nats`
+- Конфигурация сервисов и ключи — через переменные окружения
+
+## Характерные сложности и подходы к их решению
+- **Нагрузка и задержки**: используем кэш правил в Redis, держим соединения открытыми (keep‑alive), прогреваем кэш перед пиками. Это сокращает обращения к базе и ускоряет принятие решения по редиректу.
+- **Инвалидация кэша и согласованность**: у правил есть версия (`etag/version`). При изменениях пишем в хранилище и сразу обновляем кэш (write‑through), плюс фоновой refresh с джиттером и блокировкой, чтобы избежать одновременного «прогрева» многими запросами.
+- **Конфликты правил и приоритеты**: правила упорядочены детерминированно, приоритет задается явно. Перед публикацией доступен `preview/explain`, чтобы увидеть, почему сработает именно это правило, и безопасно проверить изменения.
+- **Доступность внешних зависимостей**: при проблемах переходим в деградированный режим — отвечаем из кэша и включаем circuit breaker. События публикуем асинхронно (fire‑and‑forget), чтобы ответ пользователю не зависел от аналитики.
+- **Ограничение трафика и капы**: считаем лимиты атомарно в Redis (Lua), применяем token bucket/sliding window. Лимиты настраиваются по ключу, тенанту и источнику, чтобы защититься от перегрузки и недобросовестного трафика.
+- **Наблюдаемость и отладка**: каждый запрос помечается `X-Trace-Id`, логи структурированы, трассировки с выборкой (sampling). На p95/p99 и долю ошибок настроены SLO/алерты, что позволяет быстро находить регрессии.
+- **Безопасность и приватность**: API‑ключи со `scopes`, ротация/отзыв, принцип наименьших привилегий. Минимизируем PII, для событий задан TTL и агрегированная форма в отчетах; доступ аудируется.
+
+
