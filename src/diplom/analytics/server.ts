@@ -1,13 +1,13 @@
 import Fastify from 'fastify';
 import { readEnv } from '../common/config';
 import { connectMongo } from '../db/schemas';
-import { rollupDaily } from './service';
 import { getNats } from '../common/nats';
-import { EventModel } from '../db/schemas';
 import { createApiKeyPreHandler } from '../common/authApiKey';
 import { ApiKeyReaderMongo } from '../common/adapters/ApiKeyReaderMongo';
 import { requireScopes } from '../common/policy';
 import { logger } from '../common/logger';
+import { EventRepositoryMongo, MetricRepositoryMongo } from './infrastructure/MongoRepositories';
+import { AnalyticsService } from './service';
 
 const bootstrap = async () => {
   const env = readEnv();
@@ -16,9 +16,13 @@ const bootstrap = async () => {
 
   const apiKeyPreHandler = createApiKeyPreHandler(new ApiKeyReaderMongo());
 
+  const eventsRepo = new EventRepositoryMongo();
+  const metricsRepo = new MetricRepositoryMongo();
+  const analytics = new AnalyticsService(eventsRepo, metricsRepo);
+
   app.post('/rollup/:date', { preHandler: [apiKeyPreHandler, requireScopes(['analytics:rollup'])] }, async (req) => {
     const date = (req.params as any).date as string;
-    return rollupDaily(date);
+    return analytics.rollupDaily(date);
   });
 
   const port = env.port || 3003;
@@ -31,7 +35,7 @@ const bootstrap = async () => {
       for await (const m of sub) {
         try {
           const data = JSON.parse(new TextDecoder().decode(m.data));
-          await EventModel.create({
+          await analytics.ingestEvent({
             type: data.type,
             slug: data.slug,
             campaignId: data.campaignId,

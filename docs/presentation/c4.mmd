@@ -1,0 +1,69 @@
+flowchart TB
+    %% Уровень 1 — Контекст
+    subgraph L1["Уровень 1 — Контекст"]
+        direction TB
+        L1_Recruiter["Рекрутер"]
+        L1_Admin["Администратор"]
+        L1_Analyst["Аналитик"]
+        L1_Candidate["Кандидат"]
+
+        L1_Core["Платформа HR Smart Links"]
+        L1_Ext["Внешние системы\n(CRM/ATS, IP‑Geo, MongoDB/Redis, NATS)"]
+
+        L1_Candidate -->|"Открывает /r/{slug}"| L1_Core
+        L1_Recruiter --- L1_Core
+        L1_Admin --- L1_Core
+        L1_Analyst --- L1_Core
+        L1_Core -->|"Интеграции"| L1_Ext
+    end
+
+    %% Уровень 2 — Контейнеры
+    subgraph L2["Уровень 2 — Контейнеры"]
+        direction TB
+        L2_Edge["Edge Redirector\nHTTP /r/{slug}"]
+        L2_AdminAPI["Admin API\nКампании, SmartLinks, вакансии, API‑ключи"]
+        L2_RulesAPI["Rules API\nCRUD RuleSets, Preview"]
+        L2_RulesEngine["Rules Engine\nDSL Parser & Evaluator"]
+        L2_Analytics["Analytics Service\nCollector & Rollups"]
+
+        L2_Mongo["MongoDB"]
+        L2_Redis["Redis"]
+        L2_NATS["NATS"]
+
+        L2_Edge --> L2_Mongo
+        L2_Edge --> L2_Redis
+        L2_Edge --> L2_RulesEngine
+        L2_Edge --> L2_NATS
+
+        L2_RulesAPI --> L2_Mongo
+        L2_RulesAPI --> L2_RulesEngine
+
+        L2_AdminAPI --> L2_Mongo
+
+        L2_Analytics --> L2_NATS
+        L2_Analytics --> L2_Mongo
+    end
+
+    %% Уровень 3 — Компоненты Edge
+    subgraph L3["Уровень 3 — Компоненты Edge Redirector"]
+        direction TB
+        L3_Http["HTTP API\nFastify /r/{slug}"]
+        L3_Facade["RedirectFacade"]
+
+        subgraph L3_Pipeline["Пайплайн (Chain of Responsibility)"]
+            direction LR
+            L3_Norm["ContextNormalizer"]
+            L3_Rate["RateLimitHandler"]
+            L3_Resolve["ResolveRuleHandler"]
+            L3_Audit["AuditHandler"]
+        end
+
+        L3_Http --> L3_Facade
+        L3_Facade --> L3_Norm --> L3_Rate --> L3_Resolve --> L3_Audit
+    end
+
+    %% Связи между уровнями
+    L1_Core -->|"детализация сервисов"| L2_Edge
+    L2_Edge -->|"детализация компонентов Edge"| L3_Http
+
+

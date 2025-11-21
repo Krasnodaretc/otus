@@ -1,10 +1,25 @@
 import Fastify from 'fastify';
 import { readEnv } from '../common/config';
 import { connectMongo } from '../db/schemas';
-import { createCampaign, createSmartLink, createVacancy, issueApiKey, listApiKeys, listCampaigns, listSmartLinks, listVacancies } from './service';
 import { createApiKeyPreHandler } from '../common/authApiKey';
 import { ApiKeyReaderMongo } from '../common/adapters/ApiKeyReaderMongo';
 import cors from '@fastify/cors';
+import {
+  CampaignRepositoryMongo,
+  SmartLinkRepositoryMongo,
+  VacancyRepositoryMongo,
+  ApiKeyRepositoryMongo,
+} from './infrastructure/MongoRepositories';
+import {
+  CreateCampaignHandler,
+  ListCampaignsHandler,
+  CreateSmartLinkHandler,
+  ListSmartLinksHandler,
+  CreateVacancyHandler,
+  ListVacanciesHandler,
+  IssueApiKeyHandler,
+  ListApiKeysHandler,
+} from './application/UseCases';
 
 const bootstrap = async () => {
   const env = readEnv();
@@ -13,41 +28,59 @@ const bootstrap = async () => {
   const apiKeyPreHandler = createApiKeyPreHandler(new ApiKeyReaderMongo());
   await app.register(cors, { origin: true });
 
-  app.get('/campaigns', { preHandler: apiKeyPreHandler }, async () => listCampaigns());
+   const campaignRepo = new CampaignRepositoryMongo();
+   const smartLinkRepo = new SmartLinkRepositoryMongo();
+   const vacancyRepo = new VacancyRepositoryMongo();
+   const apiKeyRepo = new ApiKeyRepositoryMongo();
+
+   const createCampaignUc = new CreateCampaignHandler(campaignRepo);
+   const listCampaignsUc = new ListCampaignsHandler(campaignRepo);
+   const createSmartLinkUc = new CreateSmartLinkHandler(smartLinkRepo);
+   const listSmartLinksUc = new ListSmartLinksHandler(smartLinkRepo);
+   const createVacancyUc = new CreateVacancyHandler(vacancyRepo);
+   const listVacanciesUc = new ListVacanciesHandler(vacancyRepo);
+   const issueApiKeyUc = new IssueApiKeyHandler(apiKeyRepo);
+   const listApiKeysUc = new ListApiKeysHandler(apiKeyRepo);
+
+  app.get('/campaigns', { preHandler: apiKeyPreHandler }, async () => listCampaignsUc.execute());
   app.post<{ Body: { name: string; description?: string; tenantId?: string } }>(
     '/campaigns',
     { preHandler: apiKeyPreHandler },
     async (req, reply) => {
-    const created = await createCampaign(req.body);
-    reply.code(201).send(created);
-  });
+      const created = await createCampaignUc.execute(req.body);
+      reply.code(201).send(created);
+    },
+  );
 
-  app.get('/smart-links', { preHandler: apiKeyPreHandler }, async () => listSmartLinks());
+  app.get('/smart-links', { preHandler: apiKeyPreHandler }, async () => listSmartLinksUc.execute());
   app.post<{ Body: { slug: string; campaignId?: string; ruleSetId?: string; enabled?: boolean; metadata?: Record<string, unknown> } }>(
     '/smart-links',
     { preHandler: apiKeyPreHandler },
     async (req, reply) => {
-    const created = await createSmartLink(req.body);
-    reply.code(201).send(created);
-  });
+      const created = await createSmartLinkUc.execute(req.body);
+      reply.code(201).send(created);
+    },
+  );
 
-  app.get('/vacancies', { preHandler: apiKeyPreHandler }, async () => listVacancies());
+  app.get('/vacancies', { preHandler: apiKeyPreHandler }, async () => listVacanciesUc.execute());
   app.post<{ Body: { title: string; url: string; campaignId?: string; location?: string; skills?: string[]; locale?: string; active?: boolean } }>(
     '/vacancies',
     { preHandler: apiKeyPreHandler },
     async (req, reply) => {
-    const created = await createVacancy(req.body);
-    reply.code(201).send(created);
-  });
+      const created = await createVacancyUc.execute(req.body);
+      reply.code(201).send(created);
+    },
+  );
 
-  app.get('/api-keys', { preHandler: apiKeyPreHandler }, async () => listApiKeys());
+  app.get('/api-keys', { preHandler: apiKeyPreHandler }, async () => listApiKeysUc.execute());
   app.post<{ Body: { key: string; tenantId?: string; scopes?: string[]; active?: boolean } }>(
     '/api-keys',
     { preHandler: apiKeyPreHandler },
     async (req, reply) => {
-    const created = await issueApiKey(req.body);
-    reply.code(201).send(created);
-  });
+      const created = await issueApiKeyUc.execute(req.body);
+      reply.code(201).send(created);
+    },
+  );
 
   const port = env.port || 3002;
   await app.listen({ host: '0.0.0.0', port });
