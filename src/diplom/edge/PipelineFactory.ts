@@ -17,7 +17,7 @@ export class PipelineFactory {
   }
 
   static async createWithNatsFallback(
-    createResolver: () => RedirectResolver = () => new MongoRedirectResolver(),
+    createResolver: () => RedirectResolver,
   ): Promise<PipelineFactory> {
     const bus = await createNatsEventBus(getNats).catch(() => consoleBus);
     const resolver = createResolver();
