@@ -8,6 +8,7 @@ describe('ResolveRuleHandler branches', () => {
     };
     const h = new ResolveRuleHandler(resolver);
     const res: any = { status: 200 };
+
     await h.handle({ slug: 's' } as any, res);
     expect(res.status).toBe(302);
   });
@@ -17,6 +18,7 @@ describe('ResolveRuleHandler branches', () => {
     };
     const h = new ResolveRuleHandler(resolver);
     const res: any = { status: 200 };
+
     await h.handle({} as any, res);
     expect(res.status).toBe(204);
   });

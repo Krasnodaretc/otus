@@ -7,14 +7,17 @@ describe('timeWindow condition', () => {
     const mm = now.getUTCMinutes().toString().padStart(2, '0');
     const params = { from: `${hh}:${mm}+00:00`, to: `${hh}:${mm}+00:00` };
     const res = timeWindowCondition.match({} as any, params);
+
     expect(res).toBe(true);
   });
   it('returns false on invalid format', () => {
     const res = timeWindowCondition.match({} as any, { from: 'xx', to: 'yy' } as any);
+
     expect(res).toBe(false);
   });
   it('handles overnight window', () => {
     const res = timeWindowCondition.match({} as any, { from: '23:00+00:00', to: '01:00+00:00' });
+
     // cannot assert concrete result without controlling time; just ensure boolean
     expect(typeof res).toBe('boolean');
   });
@@ -26,6 +29,7 @@ describe('timeWindow condition', () => {
     const hh = (n: number) => n.toString().padStart(2, '0');
     const params = { from: `${hh(start)}:00+00:00`, to: `${hh(end)}:00+00:00` };
     const res = timeWindowCondition.match({} as any, params);
+
     expect(res).toBe(false);
   });
 });

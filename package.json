@@ -91,6 +91,7 @@
     "start:edge": "ts-node src/diplom/edge/server.ts",
     "start:rules": "ts-node src/diplom/rules-api/server.ts",
     "start:admin": "ts-node src/diplom/admin-api/server.ts",
-    "start:analytics": "ts-node src/diplom/analytics/server.ts"
+    "start:analytics": "ts-node src/diplom/analytics/server.ts",
+    "lint:diplom": "eslint src/diplom --ext .ts"
   }
 }

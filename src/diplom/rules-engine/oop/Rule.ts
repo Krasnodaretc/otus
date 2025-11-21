@@ -21,6 +21,7 @@ export class RuleSetOop {
   constructor(rules: Rule[]) {
     this.rules = rules;
   }
+
   ordered(): Rule[] {
     return [...this.rules].sort((a, b) => b.priority - a.priority);
   }

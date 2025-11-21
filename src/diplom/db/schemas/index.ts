@@ -2,7 +2,9 @@ import mongoose from 'mongoose';
 
 export const connectMongo = async (mongoUrl: string) => {
   if (mongoose.connection.readyState === 1) return mongoose.connection;
+
   await mongoose.connect(mongoUrl);
+
   return mongoose.connection;
 };
 

@@ -2,6 +2,7 @@ type Level = 'debug' | 'info' | 'warn' | 'error';
 
 const fmt = (level: Level, msg: string, meta?: unknown) => {
   const base = `[${new Date().toISOString()}] ${level.toUpperCase()} ${msg}`;
+
   return meta ? `${base} ${JSON.stringify(meta)}` : base;
 };
 

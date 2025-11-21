@@ -12,8 +12,10 @@ describe('Admin UseCases', () => {
     const create = new CreateCampaignHandler(repo as any);
     const list = new ListCampaignsHandler(repo as any);
     const res = await create.execute({ name: 'c1' });
+
     expect(res._id).toBe('1');
     const items = await list.execute();
+
     expect(items.length).toBe(1);
   });
 
@@ -26,8 +28,10 @@ describe('Admin UseCases', () => {
     const create = new CreateSmartLinkHandler(repo as any);
     const list = new ListSmartLinksHandler(repo as any);
     const res = await create.execute({ slug: 's1' });
+
     expect(res.slug).toBe('s1');
     const items = await list.execute();
+
     expect(items[0]._id).toBe('1');
   });
 
@@ -40,8 +44,10 @@ describe('Admin UseCases', () => {
     const create = new CreateVacancyHandler(repo as any);
     const list = new ListVacanciesHandler(repo as any);
     const res = await create.execute({ title: 't', url: 'u' });
+
     expect(res.title).toBe('t');
     const items = await list.execute();
+
     expect(items.length).toBe(1);
   });
 
@@ -54,8 +60,10 @@ describe('Admin UseCases', () => {
     const issue = new IssueApiKeyHandler(repo as any);
     const list = new ListApiKeysHandler(repo as any);
     const res = await issue.execute({ key: 'k1' });
+
     expect(res.key).toBe('k1');
     const items = await list.execute();
+
     expect(items[0]._id).toBe('1');
   });
 });

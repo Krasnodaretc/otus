@@ -8,6 +8,7 @@ export class EventRepositoryMongo implements IEventRepository {
       createdAt: event.createdAt || new Date(),
     });
   }
+
   async aggregateByDate(date: string): Promise<Array<{ slug: string; type: string; count: number }>> {
     const start = new Date(date);
     const end = new Date(start.getTime() + 86400000);
@@ -15,6 +16,7 @@ export class EventRepositoryMongo implements IEventRepository {
       { $match: { createdAt: { $gte: start, $lt: end } } },
       { $group: { _id: { slug: '$slug', type: '$type' }, count: { $sum: 1 } } },
     ]);
+
     return rows.map((d) => ({ slug: d._id.slug || '', type: d._id.type || '', count: d.count || 0 }));
   }
 }

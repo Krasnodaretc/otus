@@ -7,6 +7,7 @@ export const evaluateRuleSet = async (ctx: EvaluationContext, ruleset: RuleSetNo
   const parser = new JsonDslParser();
   const evaluator = new RuleEvaluator();
   const model = parser.parseRuleSet(ruleset);
+
   return evaluator.evaluate(ctx, model);
 };
 

@@ -17,6 +17,7 @@ export class ResolveRuleHandler extends BaseHandler {
       'edge.resolve_redirect',
     );
     const out = await measured(String(ctx.slug || ''), ctx);
+
     res.status = out.status;
     res.location = out.location;
     res.matchedRuleId = out.matchedRuleId;

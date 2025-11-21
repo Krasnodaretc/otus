@@ -36,10 +36,13 @@ const mapApiKey = (doc: any): ApiKeyRecord => ({
 export class CampaignRepositoryMongo implements ICampaignRepository {
   async create(payload: Partial<CampaignRecord>): Promise<CampaignRecord> {
     const doc = await CampaignModel.create(payload);
+
     return mapCampaign(doc.toObject());
   }
+
   async list(query?: Partial<CampaignRecord>): Promise<CampaignRecord[]> {
     const rows = await CampaignModel.find(query || {}).lean();
+
     return rows.map(mapCampaign);
   }
 }
@@ -47,14 +50,19 @@ export class CampaignRepositoryMongo implements ICampaignRepository {
 export class SmartLinkRepositoryMongo implements ISmartLinkRepository {
   async create(payload: Partial<SmartLinkRecord>): Promise<SmartLinkRecord> {
     const doc = await SmartLinkModel.create(payload);
+
     return mapSmartLink(doc.toObject());
   }
+
   async list(query?: Partial<SmartLinkRecord>): Promise<SmartLinkRecord[]> {
     const rows = await SmartLinkModel.find(query || {}).lean();
+
     return rows.map(mapSmartLink);
   }
+
   async findBySlug(slug: string): Promise<SmartLinkRecord | null> {
     const doc = await SmartLinkModel.findOne({ slug }).lean();
+
     return doc ? mapSmartLink(doc) : null;
   }
 }
@@ -62,10 +70,13 @@ export class SmartLinkRepositoryMongo implements ISmartLinkRepository {
 export class VacancyRepositoryMongo implements IVacancyRepository {
   async create(payload: Partial<VacancyRecord>): Promise<VacancyRecord> {
     const doc = await VacancyModel.create(payload);
+
     return mapVacancy(doc.toObject());
   }
+
   async list(query?: Partial<VacancyRecord>): Promise<VacancyRecord[]> {
     const rows = await VacancyModel.find(query || {}).lean();
+
     return rows.map(mapVacancy);
   }
 }
@@ -73,10 +84,13 @@ export class VacancyRepositoryMongo implements IVacancyRepository {
 export class ApiKeyRepositoryMongo implements IApiKeyRepository {
   async create(payload: Partial<ApiKeyRecord>): Promise<ApiKeyRecord> {
     const doc = await ApiKeyModel.create(payload);
+
     return mapApiKey(doc.toObject());
   }
+
   async list(query?: Partial<ApiKeyRecord>): Promise<ApiKeyRecord[]> {
     const rows = await ApiKeyModel.find(query || {}).lean();
+
     return rows.map(mapApiKey);
   }
 }

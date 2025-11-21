@@ -23,32 +23,42 @@ export const isAction = (p: unknown): p is ActionPlugin =>
 export const registerDynamicPlugin = (loaded: LoadedPlugin) => {
   if (loaded.kind === 'condition') {
     if (!isCondition(loaded.plugin)) throw new Error('Invalid condition plugin');
+
     const plugin = loaded.plugin as ConditionPlugin;
+
     registerCondition(plugin);
+
     return;
   }
+
   if (!isAction(loaded.plugin)) throw new Error('Invalid action plugin');
+
   const plugin = loaded.plugin as ActionPlugin;
+
   registerAction(plugin);
 };
 
 export const loadPluginModule = async (modulePath: string): Promise<LoadedPlugin> => {
   // Expect module to export default or named { plugin, kind }
   // Dynamic import kept simple; callers decide how to use descriptor/version
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+   
   const mod = await import(modulePath);
   let candidate: unknown = (mod as Record<string, unknown>).default ?? (mod as Record<string, unknown>).plugin ?? mod;
+
   if (typeof candidate === 'object' && candidate !== null) {
     const maybeObj = candidate as Record<string, unknown>;
+
     if ('plugin' in maybeObj && maybeObj.plugin) {
       candidate = maybeObj.plugin;
     }
   }
+
   const modKind = (mod as Record<string, unknown>).kind;
   const kind: PluginKind =
     modKind === 'condition' || modKind === 'action'
       ? (modKind as PluginKind)
       : (isCondition(candidate) ? 'condition' : 'action');
+
   return { kind, plugin: candidate as ConditionPlugin | ActionPlugin };
 };
 

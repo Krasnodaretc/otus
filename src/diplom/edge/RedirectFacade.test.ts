@@ -10,6 +10,7 @@ describe('RedirectFacade', () => {
     } as any;
     const f = new RedirectFacade(mockRoot);
     const res = await f.handle({ slug: 's1' } as any);
+
     expect(res.status).toBe(302);
     expect(res.location).toBe('https://ok');
     expect(mockRoot.handle).toHaveBeenCalled();
@@ -22,6 +23,7 @@ describe('RedirectFacade', () => {
     } as any;
     const f = new RedirectFacade(mockRoot);
     const res = await f.handle({} as any);
+
     expect(res.status).toBe(204);
     expect(mockRoot.handle).toHaveBeenCalled();
   });

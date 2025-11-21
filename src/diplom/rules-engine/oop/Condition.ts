@@ -16,11 +16,14 @@ export class AllCondition extends Condition {
     super();
     this.children = children;
   }
+
   async evaluate(ctx: EvaluationContext, explain: ExplainRecorder): Promise<boolean> {
     for (const child of this.children) {
       const ok = await child.evaluate(ctx, explain);
+
       if (!ok) return false;
     }
+
     return true;
   }
 }
@@ -31,11 +34,14 @@ export class AnyCondition extends Condition {
     super();
     this.children = children;
   }
+
   async evaluate(ctx: EvaluationContext, explain: ExplainRecorder): Promise<boolean> {
     for (const child of this.children) {
       const ok = await child.evaluate(ctx, explain);
+
       if (ok) return true;
     }
+
     return false;
   }
 }
@@ -48,14 +54,20 @@ export class PluginCondition extends Condition {
     this.name = name;
     this.params = params;
   }
+
   async evaluate(ctx: EvaluationContext, explain: ExplainRecorder): Promise<boolean> {
     const plugin = getCondition(this.name);
+
     if (!plugin) {
       explain.record({ condition: this.name, result: false });
+
       return false;
     }
+
     const res = await plugin.match(ctx, this.params);
+
     explain.record({ condition: this.name, result: !!res });
+
     return !!res;
   }
 }

@@ -6,6 +6,7 @@ import { PipelineFactory } from './PipelineFactory';
 
 const bootstrap = async () => {
   const env = readEnv();
+
   await connectMongo(env.mongoUrl);
 
   const app = Fastify({ logger: false, trustProxy: true });
@@ -23,14 +24,20 @@ const bootstrap = async () => {
       time: new Date(),
     };
     const res = await facade.handle(ctx);
+
     if (res.status === 404) return reply.code(404).send();
+
     if (res.status === 429) return reply.code(429).send();
+
     if (res.status === 204) return reply.code(204).send();
+
     reply.header('X-Rule-Id', res.matchedRuleId || '');
+
     return reply.redirect(String(res.location), 302);
   });
 
   const port = env.port || 3000;
+
   await app.listen({ host: '0.0.0.0', port });
 };
 

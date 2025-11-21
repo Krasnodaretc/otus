@@ -6,6 +6,7 @@ export class PersistAllHandler implements EventHandler {
   canHandle(_evt: EventRecord) {
     return true;
   }
+
   async handle(evt: EventRecord) {
     await this.repo.create(evt);
   }

@@ -15,6 +15,7 @@ describe('Condition OOP evaluation', () => {
     } as any);
     const ev = new RuleEvaluator();
     const res = await ev.evaluate({} as any, model);
+
     expect(res.matchedRuleId).toBeUndefined();
   });
   it('any passes when any true', async () => {
@@ -24,6 +25,7 @@ describe('Condition OOP evaluation', () => {
     } as any);
     const ev = new RuleEvaluator();
     const res = await ev.evaluate({} as any, model);
+
     expect(res.matchedRuleId).toBe('r');
   });
 });

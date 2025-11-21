@@ -10,6 +10,7 @@ export class EventDispatcher {
   register(handler: EventHandler) {
     this.handlers.push(handler);
   }
+
   async dispatch(evt: EventRecord) {
     for (const h of this.handlers) {
       if (h.canHandle(evt)) {

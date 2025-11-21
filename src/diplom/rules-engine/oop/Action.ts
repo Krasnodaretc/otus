@@ -14,12 +14,16 @@ export class PluginAction extends Action {
     this.name = name;
     this.params = params;
   }
+
   async run(ctx: EvaluationContext): Promise<ActionExecutionResult | undefined> {
     const plugin = getAction(this.name);
+
     if (!plugin) {
       logger.warn('action plugin not found', { action: this.name });
+
       return undefined;
     }
+
     return plugin.execute(ctx, this.params);
   }
 }

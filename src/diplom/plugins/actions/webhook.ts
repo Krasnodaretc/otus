@@ -6,6 +6,7 @@ export const webhookAction: ActionPlugin = {
   execute: (_ctx, params) => {
     const url = readString(params, 'url') || '';
     const payload = typeof params === 'object' && params !== null ? (params as Record<string, unknown>)['payload'] : undefined;
+
     return { type: 'webhook', url, payload };
   },
 };

@@ -16,6 +16,7 @@ describe('evaluator branches', () => {
       ],
     };
     const res = await evaluateRuleSet(ctx as any, rs as any);
+
     expect(res.matchedRuleId).toBe('r1');
   });
 
@@ -30,6 +31,7 @@ describe('evaluator branches', () => {
       ],
     };
     const res = await evaluateRuleSet({ skills: ['go'] } as any, rs as any);
+
     expect(res.matchedRuleId).toBeUndefined();
     expect(res.actions.length).toBe(0);
   });
@@ -45,6 +47,7 @@ describe('evaluator branches', () => {
       ],
     };
     const res = await evaluateRuleSet({ skills: ['ts'] } as any, rs as any);
+
     expect(res.matchedRuleId).toBe('r3');
     expect(res.actions.length).toBe(0);
   });
@@ -54,6 +57,7 @@ describe('evaluator branches', () => {
       rules: [{ id: 'r4', if: { all: [{ type: 'not_exists' }] }, then: [] }],
     };
     const res = await evaluateRuleSet({} as any, rs as any);
+
     expect(res.matchedRuleId).toBeUndefined();
     expect(Array.isArray(res.explain)).toBe(true);
   });

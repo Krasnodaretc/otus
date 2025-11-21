@@ -19,6 +19,7 @@ describe('EventRepositoryMongo aggregateByDate variants', () => {
     ]);
     const repo = new EventRepositoryMongo();
     const rows = await repo.aggregateByDate('2024-01-01');
+
     expect(rows).toEqual([
       { slug: '', type: '', count: 0 },
       { slug: 's', type: '', count: 5 },

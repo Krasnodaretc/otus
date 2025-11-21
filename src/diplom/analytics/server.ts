@@ -11,6 +11,7 @@ import { AnalyticsService } from './service';
 
 const bootstrap = async () => {
   const env = readEnv();
+
   await connectMongo(env.mongoUrl);
   const app = Fastify({ logger: false });
 
@@ -22,19 +23,23 @@ const bootstrap = async () => {
 
   app.post('/rollup/:date', { preHandler: [apiKeyPreHandler, requireScopes(['analytics:rollup'])] }, async (req) => {
     const date = (req.params as any).date as string;
+
     return analytics.rollupDaily(date);
   });
 
   const port = env.port || 3003;
+
   await app.listen({ host: '0.0.0.0', port });
 
   try {
     const nats = await getNats();
     const sub = nats.subscribe('events.*', { queue: 'analytics' });
+
     (async () => {
       for await (const m of sub) {
         try {
           const data = JSON.parse(new TextDecoder().decode(m.data));
+
           await analytics.ingestEvent({
             type: data.type,
             slug: data.slug,

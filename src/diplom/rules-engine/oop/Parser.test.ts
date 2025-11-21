@@ -16,6 +16,7 @@ describe('JsonDslParser', () => {
       ],
     } as any);
     const ordered = model.ordered();
+
     expect(ordered[0].id).toBe('r2');
     expect(ordered[1].id).toBe('r1');
     expect(ordered[0].actions.length).toBe(1);

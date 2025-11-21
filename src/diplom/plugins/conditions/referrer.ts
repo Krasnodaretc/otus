@@ -7,7 +7,9 @@ export const referrerCondition: ConditionPlugin = {
       ? ((params as { contains?: string }).contains || '').toLowerCase()
       : '';
     const ref = String(ctx.referrer || '').toLowerCase();
+
     if (!contains) return false;
+
     return ref.includes(contains);
   },
 };

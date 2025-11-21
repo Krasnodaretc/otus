@@ -23,9 +23,11 @@ import {
 
 const bootstrap = async () => {
   const env = readEnv();
+
   await connectMongo(env.mongoUrl);
   const app = Fastify({ logger: false });
   const apiKeyPreHandler = createApiKeyPreHandler(new ApiKeyReaderMongo());
+
   await app.register(cors, { origin: true });
 
    const campaignRepo = new CampaignRepositoryMongo();
@@ -48,6 +50,7 @@ const bootstrap = async () => {
     { preHandler: apiKeyPreHandler },
     async (req, reply) => {
       const created = await createCampaignUc.execute(req.body);
+
       reply.code(201).send(created);
     },
   );
@@ -58,6 +61,7 @@ const bootstrap = async () => {
     { preHandler: apiKeyPreHandler },
     async (req, reply) => {
       const created = await createSmartLinkUc.execute(req.body);
+
       reply.code(201).send(created);
     },
   );
@@ -68,6 +72,7 @@ const bootstrap = async () => {
     { preHandler: apiKeyPreHandler },
     async (req, reply) => {
       const created = await createVacancyUc.execute(req.body);
+
       reply.code(201).send(created);
     },
   );
@@ -78,11 +83,13 @@ const bootstrap = async () => {
     { preHandler: apiKeyPreHandler },
     async (req, reply) => {
       const created = await issueApiKeyUc.execute(req.body);
+
       reply.code(201).send(created);
     },
   );
 
   const port = env.port || 3002;
+
   await app.listen({ host: '0.0.0.0', port });
 };
 

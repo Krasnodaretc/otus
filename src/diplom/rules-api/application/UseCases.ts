@@ -6,8 +6,11 @@ export class CreateRuleSetHandler {
   constructor(private readonly repo: IRuleSetRepository) {}
   async execute(payload: Partial<RuleSetRecord>): Promise<RuleSetRecord> {
     if (!payload.dsl) throw new Error('dsl required');
+
     const errors = validateRuleSet(payload.dsl);
+
     if (errors.length) throw new Error(errors.join('; '));
+
     return this.repo.create(payload);
   }
 }
@@ -31,8 +34,10 @@ export class UpdateRuleSetHandler {
   async execute(id: string, patch: Partial<RuleSetRecord>) {
     if (patch.dsl) {
       const errors = validateRuleSet(patch.dsl);
+
       if (errors.length) throw new Error(errors.join('; '));
     }
+
     return this.repo.update(id, patch);
   }
 }
@@ -47,7 +52,9 @@ export class DeleteRuleSetHandler {
 export class PreviewRulesHandler {
   async execute(context: any, dsl: any) {
     const errors = validateRuleSet(dsl);
+
     if (errors.length) throw new Error(errors.join('; '));
+
     return evaluateRuleSet(context, dsl);
   }
 }

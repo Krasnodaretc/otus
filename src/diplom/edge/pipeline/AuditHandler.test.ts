@@ -8,6 +8,7 @@ describe('AuditHandler', () => {
     const h = new AuditHandler(bus as any);
     const res: ResponseResult = { status: 200, location: 'https://x', matchedRuleId: 'r1' };
     const ctx: RequestContext = { slug: 's' };
+
     await h.handle(ctx, res);
     expect(published.length).toBe(3);
   });

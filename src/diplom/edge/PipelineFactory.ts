@@ -21,6 +21,7 @@ export class PipelineFactory {
   ): Promise<PipelineFactory> {
     const bus = await createNatsEventBus(getNats).catch(() => consoleBus);
     const resolver = createResolver();
+
     return new PipelineFactory(bus, resolver);
   }
 
@@ -31,6 +32,7 @@ export class PipelineFactory {
     const audit = new AuditHandler(this.bus);
 
     normalizer.setNext(rate).setNext(resolverHandler).setNext(audit);
+
     return normalizer;
   }
 }

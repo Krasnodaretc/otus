@@ -20,11 +20,13 @@ export class AnalyticsService {
 
   readonly ingestEvent = withMeasurement(async (evt: EventRecord) => {
     await this.dispatcher.dispatch(evt);
+
     return { ok: true };
   }, 'analytics.ingest');
 
   readonly rollupDaily = withMeasurement(async (date: string) => {
     await this.rollupStrategy.execute(date);
+
     return { ok: true };
   }, 'analytics.rollup_daily');
 }

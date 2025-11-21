@@ -21,6 +21,7 @@ describe('rules-engine evaluator', () => {
       ],
     };
     const res = await evaluateRuleSet(ctx as any, rs as any);
+
     expect(res.matchedRuleId).toBe('r1');
     expect(res.actions[0].type).toBe('redirect');
     expect(res.actions[0].url).toBe('https://example.com/fe');

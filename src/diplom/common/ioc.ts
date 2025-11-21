@@ -16,12 +16,17 @@ export class Container {
     if (this.singletons.has(token)) {
       return this.singletons.get(token) as T;
     }
+
     const factory = this.factories.get(token);
+
     if (factory) {
       const created = factory() as T;
+
       this.singletons.set(token, created);
+
       return created;
     }
+
     throw new Error(`Dependency not found: ${token}`);
   }
 }

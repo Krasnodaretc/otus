@@ -5,6 +5,7 @@ export const deeplinkAction: ActionPlugin = {
   name: 'deeplink',
   execute: (_ctx, params) => {
     const url = readString(params, 'url') || '';
+
     return { type: 'deeplink', url };
   },
 };

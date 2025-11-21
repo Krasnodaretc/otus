@@ -9,6 +9,7 @@ describe('PipelineFactory', () => {
     };
     const factory = new PipelineFactory(bus as any, resolver);
     const root = factory.build();
+
     expect(typeof (root as any).handle).toBe('function');
   });
   it('createWithNatsFallback uses consoleBus on failure', async () => {
@@ -24,6 +25,7 @@ describe('PipelineFactory', () => {
       } as RedirectResolver);
     const f = await PF.createWithNatsFallback(resolverFactory);
     const root = f.build();
+
     expect(root).toBeDefined();
   });
 });

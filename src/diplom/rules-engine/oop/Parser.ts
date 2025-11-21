@@ -5,28 +5,37 @@ import { Rule, RuleSetOop } from './Rule';
 
 const toCondition = (node: Record<string, unknown>): Condition => {
   if (!node) return new AllCondition([]);
+
   if ('all' in node && Array.isArray((node as { all?: unknown[] }).all)) {
     const children = ((node as { all?: unknown[] }).all || []).map((n) => toCondition(n as Record<string, unknown>));
+
     return new AllCondition(children);
   }
+
   if ('any' in node && Array.isArray((node as { any?: unknown[] }).any)) {
     const children = ((node as { any?: unknown[] }).any || []).map((n) => toCondition(n as Record<string, unknown>));
+
     return new AnyCondition(children);
   }
+
   const name = 'type' in node ? String((node as { type: unknown }).type) : '';
   const params: Record<string, unknown> = {};
+
   for (const k in node) {
     if (k !== 'type') {
       params[k] = (node as Record<string, unknown>)[k];
     }
   }
+
   return new PluginCondition(name, params);
 };
 
 const toActions = (nodes: ActionNode[] | undefined): Action[] => {
   return (nodes || []).map(n => {
     const params = { ...n };
+
     delete (params as { type?: unknown }).type;
+
     return new PluginAction(String(n.type), params);
   });
 };
@@ -35,12 +44,14 @@ const toRule = (node: RuleNode): Rule => {
   const root = toCondition(node.if);
   const actions = toActions(node.then);
   const elseActions = toActions(node.else);
+
   return new Rule({ id: node.id, priority: node.priority, root, actions, elseActions });
 };
 
 export class JsonDslParser {
   parseRuleSet(input: RuleSetNode): RuleSetOop {
     const rules = (input.rules || []).map(toRule);
+
     return new RuleSetOop(rules);
   }
 }

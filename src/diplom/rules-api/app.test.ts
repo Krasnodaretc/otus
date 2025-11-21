@@ -17,8 +17,10 @@ describe('rules-api preview endpoint', () => {
       url: '/rules/preview',
       payload: { dsl, context: { skills: ['JS'] } },
     });
+
     expect(res.statusCode).toBe(200);
     const body = res.json() as any;
+
     expect(body.matchedRuleId).toBe('r1');
     expect(body.actions[0].type).toBe('redirect');
   });

@@ -1,6 +1,6 @@
 ## Core code and design patterns
 
-### 1. Chain of Responsibility: Edge pipeline
+### 1. Chain of Responsibility: Edge pipeline + DI
 
 - `src/diplom/edge/pipeline/Handler.ts`  
   Абстракция обработчика запроса (`Handler`, `BaseHandler`), реализующая шаблон Chain of Responsibility: каждый обработчик выполняет свою часть логики и передаёт управление дальше, если статус ответа не сигнализирует об ошибке.
@@ -13,11 +13,11 @@
 - `src/diplom/edge/pipeline/AuditHandler.ts`  
   Обработчик, публикующий события `click`, `rule_matched`, `redirect` в `EventBus`, реализуя связку с событийной архитектурой.
 - `src/diplom/edge/PipelineFactory.ts`  
-  Фабрика, которая собирает цепочку обработчиков в нужном порядке, инжектируя реализацию `EventBus` (консольная или NATS).
+  Фабрика, которая собирает цепочку обработчиков в нужном порядке, инжектируя реализации `EventBus` и `RedirectResolver` (Mongo/тестовый и т.п.) извне.
 - `src/diplom/edge/RedirectFacade.ts`  
-  Фасад над пайплайном Edge: предоставляет простой метод `handle(ctx)`, скрывая детали цепочки обработчиков.
+  Фасад над пайплайном Edge: получает уже собранный `Handler` через конструктор и предоставляет простой метод `handle(ctx)`, скрывая детали цепочки.
 - `src/diplom/edge/service.ts`  
-  Функция `resolveRedirect` как ядро use‑case: загрузка SmartLink по slug, чтение RuleSet, вызов Rules Engine и выбор итогового действия (редирект/204/404).
+  Класс `MongoRedirectResolver` как ядро use‑case: загрузка SmartLink по slug, чтение RuleSet, вызов Rules Engine и выбор итогового действия (редирект/204/404), инжектируемый в пайплайн через интерфейс `RedirectResolver`.
 
 ### 2. Interpreter + Composite: JSON DSL for rules
 
@@ -54,7 +54,7 @@
 - `src/diplom/rules-engine/evaluator.ts`  
   Тонкая обёртка `evaluateRuleSet`, связывающая DSL‑узел RuleSet с OOP‑моделью и обеспечивающая единый вход для сервисов.
 
-### 5. Event-driven architecture: EventBus and NATS
+### 5. Event-driven architecture: EventBus, NATS и Analytics
 
 - `src/diplom/common/events.ts`  
   Интерфейс `EventBus`, консольная реализация для локальной разработки и фабрика `createNatsEventBus`, публикующая события в NATS с добавлением метаданных и таймстемпа.
@@ -62,12 +62,14 @@
   Подключение к NATS с ретраями и логированием: инкапсулирует устойчивое соединение к брокеру как инфраструктурную деталь.
 - `src/diplom/edge/pipeline/AuditHandler.ts`  
   Обработчик пайплайна, который на каждый запрос генерирует доменные события (`click`, `rule_matched`, `redirect`) и отправляет их в `EventBus`, реализуя Observer поверх EventBus.
+- `src/diplom/analytics/service.ts`  
+  Класс `AnalyticsService`, который принимает репозитории событий и метрик, использует `EventDispatcher` и `DailyRollup` и оборачивается `withMeasurement`, не создавая инфраструктуру внутри бизнес‑методов.
 - `src/diplom/analytics/server.ts`  
-  Сервис аналитики, подписывающийся на `events.*`, сохраняющий события в коллекцию `events` и агрегирующий метрики в `metrics_daily`, замыкая событийный контур.
+  Сервис аналитики, подписывающийся на `events.*`, создающий `AnalyticsService` с Mongo‑репозиториями и через него сохраняющий события и агрегирующий метрики в `metrics_daily`, замыкая событийный контур.
 
 ### 6. IoC / Dependency Injection
 
 - `src/diplom/common/ioc.ts`  
-  Простой IoC‑контейнер с регистрацией singleton‑объектов и фабрик, позволяющий отделять конфигурацию зависимостей от использования и облегчать тестирование.
+  Простой IoC‑контейнер; после рефакторинга используется только как вспомогательный инструмент (при необходимости в тестах), а wiring прод‑зависимостей вынесен в `* /server.ts`/bootstrap‑модули.
 
 
