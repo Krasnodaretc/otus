@@ -35,18 +35,63 @@
     "preset": "ts-jest",
     "testEnvironment": "node",
     "collectCoverageFrom": [
-      "src/**/*.ts",
-      "!src/index.ts",
-      "!src/**/index.ts",
+      "src/diplom/**/*.ts",
+      "!src/diplom/**/index.ts",
+      "!src/diplom/**/server.ts",
+      "!src/diplom/**/app.ts",
+      "!src/diplom/common/config.ts",
+      "!src/diplom/common/events.ts",
+      "!src/diplom/common/ioc.ts",
+      "!src/diplom/common/logger.ts",
+      "!src/diplom/common/nats.ts",
+      "!src/diplom/common/redis.ts",
+      "!src/diplom/edge/service.ts",
+      "!src/diplom/admin-api/service.ts",
+      "!src/diplom/analytics/service.ts",
+      "!src/diplom/rules-api/service.ts",
+      "!src/diplom/**/__mocks__/**",
       "!src/**/*.test.ts"
+    ],
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "json-summary"
     ],
     "testMatch": [
       "**/tests/**/*.test.ts",
       "**/src/**/*.test.ts"
-    ]
+    ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 90,
+        "branches": 50,
+        "functions": 90,
+        "lines": 90
+      }
+    }
   },
   "dependencies": {
     "jsonwebtoken": "^9.0.2",
-    "ws": "^8.18.3"
+    "ws": "^8.18.3",
+    "fastify": "^4.26.2",
+    "@fastify/rate-limit": "^10.1.0",
+    "@fastify/cors": "^9.0.1",
+    "mongoose": "^8.7.0",
+    "ioredis": "^5.4.1",
+    "nats": "^2.21.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "dev": "ts-node src/index.ts",
+    "start:server": "ts-node src/server/bootstrap.ts",
+    "start:auth": "ts-node src/auth-service/bootstrap.ts",
+    "start:edge": "ts-node src/diplom/edge/server.ts",
+    "start:rules": "ts-node src/diplom/rules-api/server.ts",
+    "start:admin": "ts-node src/diplom/admin-api/server.ts",
+    "start:analytics": "ts-node src/diplom/analytics/server.ts",
+    "lint:diplom": "eslint src/diplom --ext .ts"
   }
 }

@@ -1,0 +1,99 @@
+flowchart LR
+    %% High-level request and data flow across all key parts
+
+    subgraph Client["Clients"]
+        C_Candidate["Candidate\nBrowser / Messenger"]
+        C_Recruiter["Recruiter\nAdmin UI"]
+        C_Admin["Admin\nAdmin UI"]
+        C_Analyst["Analyst\nBI / Reports"]
+    end
+
+    subgraph Edge["Edge Redirector Service"]
+        E_Http["HTTP Server\nGET /r/{slug}"]
+        E_Facade["RedirectFacade"]
+        subgraph E_Pipeline["Pipeline (Chain of Responsibility)"]
+            E_Norm["ContextNormalizer"]
+            E_Rate["RateLimitHandler"]
+            E_Resolve["ResolveRuleHandler"]
+            E_Audit["AuditHandler"]
+        end
+    end
+
+    subgraph RulesAPI["Rules API Service"]
+        R_HTTP["HTTP API\nCRUD RuleSets, /rules/preview"]
+        R_App["UseCases\nCreate/Update/List/Preview"]
+    end
+
+    subgraph AdminAPI["Admin API Service"]
+        A_HTTP["HTTP API\nCampaigns, SmartLinks, Vacancies, ApiKeys"]
+        A_App["UseCases\nBusiness logic"]
+    end
+
+    subgraph RulesEngine["Rules Engine"]
+        RE_Dsl["JsonDslParser\nInterpreter"]
+        RE_Eval["RuleEvaluator"]
+        RE_Cond["Condition Tree\nAll/Any/PluginCondition"]
+        RE_Act["PluginAction Runner"]
+        RE_Reg["Plugin Registry\nconditions/actions"]
+    end
+
+    subgraph Analytics["Analytics Service"]
+        AN_HTTP["HTTP API\n/rollup/:date"]
+        AN_Sub["NATS Subscriber\n(events.*)"]
+        AN_Rollup["rollupDaily\naggregations"]
+    end
+
+    subgraph Infra["Infrastructure"]
+        DB["MongoDB\ncampaigns, smart_links, rulesets,\nvacancies, api_keys, events, metrics_daily"]
+        Cache["Redis\nrules cache, caps, rate limits"]
+        Bus["NATS\nEvent Bus (events.*)"]
+        IPGeo["IP-Geo Provider"]
+        CRM["CRM / ATS\nwebhook consumer"]
+    end
+
+    %% Clients to services
+    C_Candidate -->|"GET /r/{slug}"| E_Http
+    C_Recruiter -->|"Admin UI → Admin API / Rules API"| A_HTTP
+    C_Recruiter -->|"Configure rulesets (JSON DSL)"| R_HTTP
+    C_Admin -->|"Manage tenants, keys, policies"| A_HTTP
+    C_Analyst -->|"Query rollups / reports"| AN_HTTP
+
+    %% Edge internal flow
+    E_Http --> E_Facade
+    E_Facade --> E_Pipeline
+    E_Norm -->|"normalize UA, IP→geo, device, locale"| IPGeo
+    E_Norm --> E_Rate
+    E_Rate -->|"check per-IP limits"| Cache
+    E_Rate --> E_Resolve
+
+    %% Resolve rule and redirect
+    E_Resolve -->|"load SmartLink by slug"| DB
+    E_Resolve -->|"load RuleSet by id"| DB
+    E_Resolve -->|"evaluate ruleset\n(ctx, DSL)"| RulesEngine
+
+    RE_Dsl --> RE_Cond
+    RE_Cond --> RE_Eval
+    RE_Eval --> RE_Act
+    RE_Reg --> RE_Cond
+    RE_Reg --> RE_Act
+
+    %% Audit and events
+    E_Resolve -->|"302/307 redirect\nX-Rule-Id"| C_Candidate
+    E_Audit -->|"click, rule_matched, redirect"| Bus
+
+    %% Analytics consumption
+    Bus --> AN_Sub
+    AN_Sub -->|"store raw events"| DB
+    AN_Rollup -->|"write daily metrics"| DB
+    AN_HTTP -->|"read metrics_daily"| DB
+    AN_Sub -->|"optional CRM/ATS webhooks"| CRM
+
+    %% Admin and Rules APIs data flow
+    A_HTTP --> A_App
+    A_App -->|"CRUD Campaign, SmartLink, Vacancy, ApiKey"| DB
+
+    R_HTTP --> R_App
+    R_App -->|"CRUD RuleSet (DSL)"| DB
+    R_App -->|"Preview: evaluate rules without redirect"| RulesEngine
+
+

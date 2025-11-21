@@ -1,0 +1,90 @@
+erDiagram
+    CAMPAIGN {
+        string id
+        string name
+        string description
+        string tenantId
+        string createdBy
+        string updatedBy
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    SMART_LINK {
+        string id
+        string slug
+        string campaignId
+        string ruleSetId
+        boolean enabled
+        json metadata
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    RULE_SET {
+        string id
+        string name
+        string tenantId
+        json dsl
+        int version
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    VACANCY {
+        string id
+        string title
+        string campaignId
+        string location
+        string[] skills
+        string url
+        string locale
+        boolean active
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    API_KEY {
+        string id
+        string key
+        string tenantId
+        string[] scopes
+        boolean active
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    EVENT {
+        string id
+        string type
+        string slug
+        string campaignId
+        string traceId
+        json payload
+        datetime createdAt  "TTL index (14 days)"
+    }
+
+    METRIC_DAILY {
+        string id
+        string date
+        string slug
+        string campaignId
+        int clicks
+        int redirects
+        int matched
+        int errors
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    %% Relationships
+    CAMPAIGN ||--o{ SMART_LINK : "has"
+    CAMPAIGN ||--o{ VACANCY : "offers"
+    CAMPAIGN ||--o{ EVENT : "produces"
+    CAMPAIGN ||--o{ METRIC_DAILY : "aggregates"
+
+    SMART_LINK }o--|| RULE_SET : "uses"
+    SMART_LINK ||--o{ EVENT : "emits"
+    SMART_LINK ||--o{ METRIC_DAILY : "aggregates"
+
+

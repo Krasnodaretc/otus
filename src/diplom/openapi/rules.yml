@@ -1,0 +1,76 @@
+openapi: 3.0.3
+info:
+  title: Rules API
+  version: 1.0.0
+paths:
+  /rulesets:
+    get:
+      summary: List rule sets
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Create rule set
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Created
+  /rulesets/{id}:
+    get:
+      summary: Get rule set
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+    patch:
+      summary: Update rule set
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: Delete rule set
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No content
+  /rules/preview:
+    post:
+      summary: Preview rule evaluation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: OK
+
+

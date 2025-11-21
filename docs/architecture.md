@@ -1,4 +1,44 @@
 # Архитектура микросервисов для игры «Космический бой»
+# Архитектура проекта
+
+## ООП-реализация и паттерны
+
+- Rules Engine
+  - Interpreter: `JsonDslParser` преобразует JSON DSL в модель.
+  - Composite: `AllCondition`/`AnyCondition` c деревом условий.
+  - Strategy/Specification: `Condition`/`Action` как стратегии матчей/действий.
+  - Visitor (вариант через явные классы-обходчики): `RuleEvaluator` и сбор explain.
+  - Abstract Factory/Registry: фабрики/реестр плагинов условий и действий.
+  - Decorator/Proxy (потенциал): метрики/таймауты плагинов.
+
+- Edge
+  - Chain of Responsibility: `ContextNormalizer → RateLimitHandler → ResolveRuleHandler → AuditHandler`.
+  - Facade: `RedirectFacade` собирает цепочку и координирует выполнение.
+  - Strategy: провайдеры UA/Geo (позже — расширение).
+
+- Rules/Admin API
+  - Use Case/Application Layer: `CreateRuleSetHandler`, `UpdateRuleSetHandler`, `PreviewRulesHandler`, и для Admin сущностей.
+  - Repository: интерфейсы и реализации на Mongoose.
+  - DTO/Mapper: отделение транспорта от домена.
+
+- Analytics
+  - Observer/Dispatcher: `EventDispatcher` + обработчики.
+  - Strategy: `DailyRollup` (агрегации), возможно `HourlyRollup`.
+  - Repository: доступ к событиям и агрегатам.
+
+- Общие
+  - IoC/DI: зависимости через фабрики/реестры и тонкий контейнер.
+  - Policies: `ApiKeyPolicy` (Specification) со `scopes`.
+  - Observability: `withMeasurement` декоратор.
+
+## Микросервисы
+- Edge Redirector, Rules API, Admin API, Analytics — декомпозиция сохранена.
+- Инфраструктура: MongoDB, Redis, NATS через Docker Compose.
+
+## Тестирование
+- Unit: ядро правил, плагины, пайплайн Edge, политики, наблюдаемость.
+- Контрактные: OpenAPI для API.
+- Интеграционные: рольапы/события, превью правил, редиректы.
 
 ## Обзор
 Система разбита на независимые сервисы: аутентификация, профили, турниры, матчмейкинг, оркестрация боёв, симуляция/движок, рейтинги, уведомления, реплеи, планировщик, админ, шлюз. Коммуникации: синхронные REST/gRPC через API Gateway и асинхронные события через брокер (Kafka/NATS). Данные: PostgreSQL (OLTP), Redis (кэш/кворумы/очереди), S3-совместимое хранилище для реплеев, ClickHouse/BigQuery для аналитики.
