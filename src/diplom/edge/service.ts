@@ -1,7 +1,13 @@
-import { EvaluationContext } from '../common/types';
+import { ActionResultType, ActionResultTypes, EvaluationContext } from '../common/types';
 import { evaluateRuleSet } from '../rules-engine/evaluator';
 import { RuleSetModel, SmartLinkModel } from '../db/schemas';
 import { registerBuiltInPlugins } from '../plugins/register';
+
+const redirectLikeActionTypes: ActionResultType[] = [
+  ActionResultTypes.Redirect,
+  ActionResultTypes.Deeplink,
+  ActionResultTypes.TransformUrl,
+];
 
 export type RedirectResult = {
   status: number;
@@ -35,9 +41,7 @@ export class MongoRedirectResolver implements RedirectResolver {
     if (!rs) return { status: 404 };
 
     const res = await evaluateRuleSet(ctx, rs.dsl);
-    const first = res.actions.find(
-      a => a.type === 'redirect' || a.type === 'deeplink' || a.type === 'transformUrl',
-    );
+    const first = res.actions.find(a => redirectLikeActionTypes.includes(a.type));
 
     if (!first || !first.url) return { status: 204 };
 

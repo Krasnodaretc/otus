@@ -1,5 +1,13 @@
 export type DeviceType = 'mobile' | 'desktop' | 'tablet' | 'unknown';
-export type ActionResultType = 'redirect' | 'transformUrl' | 'webhook' | 'deeplink';
+
+export const ActionResultTypes = {
+  Redirect: 'redirect',
+  TransformUrl: 'transformUrl',
+  Webhook: 'webhook',
+  Deeplink: 'deeplink',
+} as const;
+
+export type ActionResultType = (typeof ActionResultTypes)[keyof typeof ActionResultTypes];
 
 export type Geo = {
   country?: string;
