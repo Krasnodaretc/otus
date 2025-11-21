@@ -10,5 +10,3 @@ export const evaluateRuleSet = async (ctx: EvaluationContext, ruleset: RuleSetNo
 
   return evaluator.evaluate(ctx, model);
 };
-
-

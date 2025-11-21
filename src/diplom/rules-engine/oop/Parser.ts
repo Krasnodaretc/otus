@@ -6,14 +6,18 @@ import { Rule, RuleSetOop } from './Rule';
 const toCondition = (node: Record<string, unknown>): Condition => {
   if (!node) return new AllCondition([]);
 
-  if ('all' in node && Array.isArray((node as { all?: unknown[] }).all)) {
-    const children = ((node as { all?: unknown[] }).all || []).map((n) => toCondition(n as Record<string, unknown>));
+  const allValue = (node as { all?: unknown[] }).all;
+
+  if (Array.isArray(allValue)) {
+    const children = allValue.map((n) => toCondition(n as Record<string, unknown>));
 
     return new AllCondition(children);
   }
 
-  if ('any' in node && Array.isArray((node as { any?: unknown[] }).any)) {
-    const children = ((node as { any?: unknown[] }).any || []).map((n) => toCondition(n as Record<string, unknown>));
+  const anyValue = (node as { any?: unknown[] }).any;
+
+  if (Array.isArray(anyValue)) {
+    const children = anyValue.map((n) => toCondition(n as Record<string, unknown>));
 
     return new AnyCondition(children);
   }

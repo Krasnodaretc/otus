@@ -12,6 +12,7 @@ jest.mock('../../db/schemas', () => {
   };
 });
 
+import { RuleSetModel } from '../../db/schemas';
 import { RuleSetRepositoryMongo } from './RuleSetRepositoryMongo';
 
 describe('RuleSetRepositoryMongo mapping', () => {
@@ -30,6 +31,18 @@ describe('RuleSetRepositoryMongo mapping', () => {
 
     expect(u?.name).toBe('rs2');
     await repo.delete('1');
+  });
+
+  it('returns null when record is missing', async () => {
+    const repo = new RuleSetRepositoryMongo();
+    (RuleSetModel as any).findById = () => ({ lean: async () => null });
+    (RuleSetModel as any).findByIdAndUpdate = () => ({ lean: async () => null });
+
+    const f = await repo.findById('missing');
+    const u = await repo.update('missing', { name: 'x' } as any);
+
+    expect(f).toBeNull();
+    expect(u).toBeNull();
   });
 });
 
