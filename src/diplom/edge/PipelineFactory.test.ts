@@ -19,11 +19,10 @@ describe('PipelineFactory', () => {
       eventBus: { publish: async () => {} },
     }));
     const { PipelineFactory: PF } = await import('./PipelineFactory');
-    const resolverFactory = () =>
-      ({
+    const resolver = {
         resolve: async () => ({ status: 302, location: 'https://ok', matchedRuleId: 'r' }),
-      } as RedirectResolver);
-    const f = await PF.createWithNatsFallback(resolverFactory);
+      } as RedirectResolver;
+    const f = await PF.createWithNatsFallback(resolver);
     const root = f.build();
 
     expect(root).toBeDefined();

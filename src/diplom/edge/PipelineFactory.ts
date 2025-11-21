@@ -5,7 +5,7 @@ import { RateLimitHandler } from './pipeline/RateLimitHandler';
 import { ResolveRuleHandler } from './pipeline/ResolveRuleHandler';
 import { AuditHandler } from './pipeline/AuditHandler';
 import { Handler } from './pipeline/Handler';
-import { MongoRedirectResolver, RedirectResolver } from './service';
+import { RedirectResolver } from './service';
 
 export class PipelineFactory {
   private readonly bus: EventBus;
@@ -17,10 +17,9 @@ export class PipelineFactory {
   }
 
   static async createWithNatsFallback(
-    createResolver: () => RedirectResolver,
+    resolver: RedirectResolver,
   ): Promise<PipelineFactory> {
     const bus = await createNatsEventBus(getNats).catch(() => consoleBus);
-    const resolver = createResolver();
 
     return new PipelineFactory(bus, resolver);
   }
