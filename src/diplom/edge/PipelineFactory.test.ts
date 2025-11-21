@@ -1,13 +1,13 @@
-jest.mock('./service', () => ({
-  resolveRedirect: async () => ({ status: 302, location: 'https://ok', matchedRuleId: 'r' }),
-}));
-
 import { PipelineFactory } from './PipelineFactory';
+import { RedirectResolver, RedirectResult } from './service';
 
 describe('PipelineFactory', () => {
   it('builds pipeline', async () => {
     const bus = { publish: async () => {} };
-    const factory = new PipelineFactory(bus as any);
+    const resolver: RedirectResolver = {
+      resolve: async () => ({ status: 302, location: 'https://ok', matchedRuleId: 'r' } as RedirectResult),
+    };
+    const factory = new PipelineFactory(bus as any, resolver);
     const root = factory.build();
     expect(typeof (root as any).handle).toBe('function');
   });
@@ -18,7 +18,11 @@ describe('PipelineFactory', () => {
       eventBus: { publish: async () => {} },
     }));
     const { PipelineFactory: PF } = await import('./PipelineFactory');
-    const f = await PF.createWithNatsFallback();
+    const resolverFactory = () =>
+      ({
+        resolve: async () => ({ status: 302, location: 'https://ok', matchedRuleId: 'r' }),
+      } as RedirectResolver);
+    const f = await PF.createWithNatsFallback(resolverFactory);
     const root = f.build();
     expect(root).toBeDefined();
   });
